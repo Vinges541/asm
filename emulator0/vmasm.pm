@@ -16,6 +16,8 @@ $optypes{"none"} = "\x00";
 $optypes{"regb"} = "\x01";
 $optypes{"regw"} = "\x02";
 $optypes{"immed"} = "\x03";
+$optypes{"immaddr"} = "\x04";
+$optypes{"regaddr"} = "\x05";
 
 $opcodes{"nop"} = "\x00";
 $counts_operand{"nop"} = 0;
@@ -75,7 +77,12 @@ my $op = shift @_;
             return $optypes{"regw"}.pack("L",$2);
             }
         }
-
+    elsif($op =~ /^\[0x([a-f0-9]+)\]$/i){
+        return $optypes{"immaddr"}.pack("h8",scalar reverse($1));
+        }
+    elsif($op =~ /^\[r([0-9]+)\]$/){
+        return $optypes{"regaddr"}.pack("L",$1);
+        }
     print STDERR "error in operand $op\n";
 
     return undef;

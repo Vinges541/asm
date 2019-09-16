@@ -68,6 +68,8 @@ typedef unsigned char vm_operand_type;
 #define     VM_OPTYPE_REG_BYTE      1
 #define     VM_OPTYPE_REG_WORD      2
 #define     VM_OPTYPE_IMMEDIATE     3
+#define		VM_OPTYPE_IMMEDIATE_ADDRESS 4
+#define		VM_OPTYPE_REG_ADDRESS 5
 
 
 #pragma pack(1)
@@ -219,11 +221,13 @@ static unsigned int vm_get_opsize (vm_operand_type optype) {
             return 0;
 
         case VM_OPTYPE_REG_BYTE:
-            return 1;
+            return sizeof(unsigned char);
 
         case VM_OPTYPE_REG_WORD:
         case VM_OPTYPE_IMMEDIATE:
-            return 4;
+		case VM_OPTYPE_IMMEDIATE_ADDRESS:
+		case VM_OPTYPE_REG_ADDRESS:
+            return sizeof(vmopvalue_t);
         }
 
     return 0;
@@ -258,6 +262,29 @@ static vmopvalue_t vm_get_operand (vm_struct *vm, vm_operand *op) {
         case VM_OPTYPE_IMMEDIATE:
             return op->value;
 
+		case VM_OPTYPE_IMMEDIATE_ADDRESS:
+			if (op->value <= VM_MEM_SIZE - sizeof(vmopvalue_t)) {
+				return vm->memory[op->value];
+			}
+			else {
+				vm->state = VM_STATE_INVALID_OPERAND;
+				return 0;
+			}
+
+		case VM_OPTYPE_REG_ADDRESS:
+			if (op->value < VM_REG_COUNT) {
+				vmopvalue_t  ptr_reg = vm->regs[op->value];
+				if(ptr_reg <= VM_MEM_SIZE - sizeof(vmopvalue_t))
+					return vm->memory[ptr_reg];
+				else {
+					vm->state = VM_STATE_INVALID_OPERAND;
+					return 0;
+				}
+			}
+			else {
+				vm->state = VM_STATE_INVALID_OPERAND;
+				return 0;
+			}
         default:
             vm->state = VM_STATE_INVALID_OPERAND;
             return 0;
@@ -294,6 +321,33 @@ static void vm_set_operand(vm_struct *vm, vm_operand *op, vmopvalue_t value){
         case VM_OPTYPE_IMMEDIATE:
             vm->state = VM_STATE_INVALID_OPERAND;
             return;
+
+		case VM_OPTYPE_IMMEDIATE_ADDRESS:
+			if (op->value <= VM_MEM_SIZE - sizeof(vmopvalue_t)) {
+				vm->memory[op->value] = value;
+				return;
+			}
+			else {
+				vm->state = VM_STATE_INVALID_OPERAND;
+				return;
+			}
+
+		case VM_OPTYPE_REG_ADDRESS:
+			if (op->value < VM_REG_COUNT) {
+				vmopvalue_t ptr_reg = vm->regs[op->value];
+				if (ptr_reg <= VM_MEM_SIZE - sizeof(vmopvalue_t)) {
+					vm->memory[ptr_reg] = value;
+					return;
+				}
+				else {
+					vm->state = VM_STATE_INVALID_OPERAND;
+					return;
+				}
+			}
+			else {
+				vm->state = VM_STATE_INVALID_OPERAND;
+				return ;
+			}
 
         default:
             vm->state = VM_STATE_INVALID_OPERAND;
@@ -488,6 +542,7 @@ static void vm_disas_operand(vm_operand *op){
 
         case VM_OPTYPE_REG_BYTE:
             printf("byte ");
+
         case VM_OPTYPE_REG_WORD:
             printf("r%d",op->value);
             break;
@@ -495,6 +550,14 @@ static void vm_disas_operand(vm_operand *op){
         case VM_OPTYPE_IMMEDIATE:
             printf("0x%08x",op->value);
             break;
+
+		case VM_OPTYPE_IMMEDIATE_ADDRESS:
+			printf("\[0x%08x\]", op->value);
+			break;
+
+		case VM_OPTYPE_REG_ADDRESS:
+			printf("\[r%d\]", op->value);
+			break;
         }
 
     return;
