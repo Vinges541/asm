@@ -264,7 +264,7 @@ static vmopvalue_t vm_get_operand (vm_struct *vm, vm_operand *op) {
 
 		case VM_OPTYPE_IMMEDIATE_ADDRESS:
 			if (op->value <= VM_MEM_SIZE - sizeof(vmopvalue_t)) {
-				return vm->memory[op->value];
+				return *((vmopvalue_t*)(&vm->memory[op->value]));
 			}
 			else {
 				vm->state = VM_STATE_INVALID_OPERAND;
@@ -275,7 +275,7 @@ static vmopvalue_t vm_get_operand (vm_struct *vm, vm_operand *op) {
 			if (op->value < VM_REG_COUNT) {
 				vmopvalue_t  ptr_reg = vm->regs[op->value];
 				if(ptr_reg <= VM_MEM_SIZE - sizeof(vmopvalue_t))
-					return vm->memory[ptr_reg];
+					return *((vmopvalue_t*)(&vm->memory[ptr_reg]));
 				else {
 					vm->state = VM_STATE_INVALID_OPERAND;
 					return 0;
@@ -324,7 +324,7 @@ static void vm_set_operand(vm_struct *vm, vm_operand *op, vmopvalue_t value){
 
 		case VM_OPTYPE_IMMEDIATE_ADDRESS:
 			if (op->value <= VM_MEM_SIZE - sizeof(vmopvalue_t)) {
-				vm->memory[op->value] = value;
+				*((vmopvalue_t*)(&vm->memory[op->value])) = value;
 				return;
 			}
 			else {
@@ -336,7 +336,7 @@ static void vm_set_operand(vm_struct *vm, vm_operand *op, vmopvalue_t value){
 			if (op->value < VM_REG_COUNT) {
 				vmopvalue_t ptr_reg = vm->regs[op->value];
 				if (ptr_reg <= VM_MEM_SIZE - sizeof(vmopvalue_t)) {
-					vm->memory[ptr_reg] = value;
+					*((vmopvalue_t*)(&vm->memory[ptr_reg])) = value;
 					return;
 				}
 				else {
