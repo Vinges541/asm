@@ -40,7 +40,6 @@ $counts_operand{"hlt"} = 0;
 
 $count_opcode = 10;
 
-
 #my $optype_none = "\x00";
 #my $optype_flagb= "\x01";
 #my $optype_flagw= "\x02";
@@ -174,4 +173,3 @@ if(!defined($in)){
 return 1;
 
 END { }
-
