@@ -39,6 +39,10 @@ $opcodes{"or"} = "\x08";
 $counts_operand{"or"} = 2;
 $opcodes{"hlt"} = "\x09";
 $counts_operand{"hlt"} = 0;
+$opcodes{"push"} = "\x0A";
+$counts_operand{"push"} = 1;
+$opcodes{"pop"} = "\x0B";
+$counts_operand{"pop"} = 1;
 
 $count_opcode = 10;
 
@@ -97,7 +101,7 @@ my $ops;
 my $op1;
 my $op2;
 
-    if(! ($line =~ /^ *([a-z]{2,3}) *(.*) *$/) ){
+    if(! ($line =~ /^ *([a-z]{2,4}) *(.*) *$/) ){
         print STDERR "error in line $line\n";
         return undef;
         }

@@ -35,6 +35,7 @@
 
 #define VM_REG_COUNT    32
 #define VM_MEM_SIZE     (4096*1024)
+#define VM_STACK_SIZE   (4096*64)
 
 #define VM_CODE_START   4096
 
@@ -57,7 +58,9 @@ typedef unsigned char vm_opcodes;
 #define     VM_AND      7
 #define     VM_OR       8
 #define     VM_HLT      9
-#define VM_COUNT_HAND   (VM_HLT + 1)
+#define     VM_POP      10
+#define     VM_PUSH     11
+#define VM_COUNT_HAND   (VM_PUSH + 1)
 
 typedef void (*vm_handler)(vm_struct *vm);
 
@@ -96,13 +99,16 @@ typedef enum _vm_state{
     VM_STATE_IO_ERROR,
     VM_STATE_GENERAL_ERROR,
     VM_STATE_UNKNOW_ERROR,
-    VM_STATE_HALT
+    VM_STATE_HALT,
+	VM_STATE_STACK_UNDERFLOW,
+	VM_STATE_STACK_OVERFLOW
 } vm_state;
 
 static char *vm_state_message[] = {
-    "VM_STATE_OK", "VM_STATE_UNKNOW_INSTRUCTION", "VM_STATE_INVALID_OPERAND",
-    "VM_STATE_IO_ERROR", "VM_STATE_GENERAL_ERROR", "VM_STATE_UNKNOW_ERROR",
-    "VM_STATE_HALT"};
+    "VM_STATE_OK", "VM_STATE_UNKNOWN_INSTRUCTION", "VM_STATE_INVALID_OPERAND",
+    "VM_STATE_IO_ERROR", "VM_STATE_GENERAL_ERROR", "VM_STATE_UNKNOWN_ERROR",
+    "VM_STATE_HALT", "VM_STATE_STACK_UNDERFLOW",
+	"VM_STATE_STACK_OVERFLOW" };
 
 
 typedef struct _vm_struct{
@@ -113,12 +119,11 @@ typedef struct _vm_struct{
 
     vm_instruction *ip;
     vmopvalue_t regs[VM_REG_COUNT];
-
     unsigned char memory[VM_MEM_SIZE];
 
 } vm_struct;
 
-
+#define ESP vm->regs[31]
 
 //----------------------------------------
 // declaration function
@@ -142,13 +147,14 @@ static void vm_xor(vm_struct *vm);
 static void vm_and(vm_struct *vm);
 static void vm_or(vm_struct *vm);
 static void vm_hlt(vm_struct *vm);
-
+static void vm_push(vm_struct *vm);
+static void vm_pop(vm_struct *vm);
 static void vm_init (vm_struct *vm);
 
 //----------------------------------------
 // global variable
 
-vm_handler vm_handlers[VM_COUNT_HAND] = {vm_nop, vm_in, vm_out, vm_mov, vm_add, vm_sub, vm_xor, vm_and, vm_or, vm_hlt};
+vm_handler vm_handlers[VM_COUNT_HAND] = {vm_nop, vm_in, vm_out, vm_mov, vm_add, vm_sub, vm_xor, vm_and, vm_or, vm_hlt, vm_push, vm_pop};
 
 
 //----------------------------------------
@@ -532,6 +538,38 @@ if (vm->state == VM_STATE_OK)
 }
 
 //--------------------
+
+
+static void vm_push(vm_struct *vm){
+
+	vmopvalue_t value = vm_get_operand(vm, &vm->ip->op1);
+	if (vm->state == VM_STATE_OK) {
+		if (ESP < VM_STACK_SIZE - sizeof(vmopvalue_t)) {
+			*((vmopvalue_t*)(&vm->memory[++ESP])) = value;
+		}
+	}
+    return;
+}
+
+//--------------------
+
+
+static void vm_pop(vm_struct *vm){
+
+	if (ESP > 0) {
+		if (vm->ip->op1.optype != VM_OPTYPE_IMMEDIATE)
+			vm_set_operand(vm, &vm->ip->op1, *((vmopvalue_t*)(&vm->memory[ESP--])));
+		else {
+			vm->state = VM_STATE_INVALID_OPERAND;
+			return;
+		}
+	}
+	else
+		vm->state = VM_STATE_STACK_UNDERFLOW;
+    return;
+}
+
+//--------------------
 //--------------------
 
 #ifdef _VM_DEBUG
@@ -566,7 +604,7 @@ static void vm_disas_operand(vm_operand *op){
 static void vm_disas_ins(vm_struct *vm){
 
 vm_instruction *ins;
-static char *mnem[] = {"nop", "in", "out", "mov", "add", "sub", "xor", "and", "or", "hlt"};
+static char *mnem[] = {"nop", "in", "out", "mov", "add", "sub", "xor", "and", "or", "hlt", "push", "pop"};
 
     ins = vm->ip;
 
