@@ -4,9 +4,7 @@
 include c:\masm32\include\msvcrt.inc
 include c:\masm32\include\kernel32.inc
 include c:\masm32\include\user32.inc
-;includelib c:\masm32\lib\msvcrt.lib
 
-;printf proto c :VARARG
 fopen proto C path:dword, mode:dword
 fclose proto C fp:dword
 fread proto C array:dword, _size:dword, count:dword, stream:dword
