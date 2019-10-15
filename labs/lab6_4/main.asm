@@ -22,8 +22,8 @@ include Strings.mac
 .data?
 
 .const
-format db "%s",13,10,0
-buffer dd 1234141,12341234,234532,349689,9897132,198
+endl db 13, 10, 0
+format db "%d ", 0
 
 .code
 
@@ -63,7 +63,7 @@ PrintBuf proc buf:dword, bufSize:dword
 		add edi, 4
 		inc ecx
 	.endw
-	;invoke crt_printf, addr endl
+	invoke crt_printf, addr endl
     ret
     
 PrintBuf endp
@@ -73,19 +73,22 @@ PrintBuf endp
 ; Функция сложения элементов массива.
 AddBuf proc resBuf:dword, op1Buf:dword, op2Buf:dword, bufSize:dword
 
-    local tmp:dword
-    
-    mov eax, [op1Buf]
-    mov eax, [eax]
-    mov [tmp], eax
-    mov eax, [op2Buf]
-    mov eax, [eax]
-    add [tmp], eax
-    
-    mov eax, resBuf
-    mov ebx, [tmp]
-    mov [eax], ebx
-
+    local arr1:dword
+	local arr2:dword
+	mov edx, resBuf
+	mov edi, op1Buf
+	mov esi, op2Buf
+	mov ecx, 0
+	.while ecx < dword ptr [bufSize]
+		mov eax, [edi]
+		mov ebx, [esi]
+		add eax, ebx
+		mov [edx], eax
+		add edx, 4
+		add edi, 4
+		add esi, 4
+		inc ecx
+	.endw
     ret
 
 AddBuf endp
@@ -109,12 +112,12 @@ main proc c argc:DWORD, argv:DWORD, envp:DWORD
     mov [op2Buf], eax
 
     
-    invoke GenerateRandomBuf, [op1Buf], BUF_SIZE
-    invoke GenerateRandomBuf, [op2Buf], BUF_SIZE
-    invoke PrintBuf, [op1Buf], BUF_SIZE
-    invoke PrintBuf, [op2Buf], BUF_SIZE
-    invoke AddBuf, [resBuf], [op1Buf], [op2Buf], BUF_SIZE
-    invoke PrintBuf, [resBuf], BUF_SIZE
+    invoke GenerateRandomBuf, op1Buf, BUF_SIZE
+    invoke GenerateRandomBuf, op2Buf, BUF_SIZE
+    invoke PrintBuf, op1Buf, BUF_SIZE
+    invoke PrintBuf, op2Buf, BUF_SIZE
+    invoke AddBuf, resBuf, op1Buf, op2Buf, BUF_SIZE
+    invoke PrintBuf, resBuf, BUF_SIZE
 	
 	mov eax, 0
 	ret
