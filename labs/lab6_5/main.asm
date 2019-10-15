@@ -68,15 +68,41 @@ PrintBuf proc buf:dword, bufSize:dword
     
 PrintBuf endp
 
-
+mycmp proc C value:DWORD
+	
+	.if value < 10
+		mov eax, 1
+	.else
+		mov eax, 0
+	.endif
+	ret
+mycmp endp
 
 ;‘ункцию сохран€ет в первом буфере элементы второго,
 ;удовлетвор€ющие условию
 ;¬озвращает количество элементов в первом буфере,
 ;т.е. удовлетвор€ющих условию.
-FilterBuf proc dstBuf:dword, srcBuf:dword, srcBufSize:dword, cmpFun:dword
+FilterBuf proc C dstBuf:dword, srcBuf:dword, srcBufSize:dword, cmpFun:dword
 
-
+	local dstBufSize:dword
+	mov [dstBufSize], 0
+	mov ecx, 0
+	mov edi, dstBuf
+	mov esi, srcBuf
+	.while ecx < srcBufSize
+		push [esi]
+		call dword ptr [cmpFun]
+		.if eax == 1
+			mov eax, [esi]
+			mov [edi], eax
+			add edi, 4
+			inc [dstBufSize]
+		.endif
+		add esi, 4
+		inc ecx
+	.endw
+	mov eax, [dstBufSize]
+	ret
 FilterBuf endp
 
 
@@ -95,8 +121,8 @@ main proc c argc:DWORD, argv:DWORD, envp:DWORD
     
     invoke GenerateRandomBuf, srcBuf, BUF_SIZE
     invoke PrintBuf, srcBuf, BUF_SIZE
-    ;invoke FilterBuf, dstBuf, srcBuf, BUF_SIZE
-    invoke PrintBuf, dstBuf, BUF_SIZE
+    invoke FilterBuf, dstBuf, srcBuf, BUF_SIZE, mycmp
+    invoke PrintBuf, dstBuf, eax
 	
 	mov eax, 0
 	ret
