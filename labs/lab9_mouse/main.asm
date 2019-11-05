@@ -37,6 +37,7 @@ AppWindowName equ <"Application">
 
 .data
 
+buf dd 100 dup(0)
 
 .data?
 
@@ -57,6 +58,8 @@ ST_1 dd 202     ; идентификатор статического окна
 .code
 
 ;----------------------------------------
+
+sprintf proto C :dword, :VARARG
 
 RegisterClassMainWindow proto;
 
@@ -146,18 +149,18 @@ CreateMainWindow proc
     invoke RegisterClassMainWindow
 
     ; создание окна зарегестрированного класса
-    invoke CreateWindowEx, 
-        WS_EX_CONTROLPARENT or WS_EX_APPWINDOW, ; расширенный стиль окна
-        $CTA0(AppWindowName),	; имя зарегестрированного класса окна
-        $CTA0("Mouse example"),	; заголовок окна
-        WS_OVERLAPPEDWINDOW,	; стиль окна
-        10,	    ; X-координата левого верхнего угла
-        10,	    ; Y-координата левого верхнего угла
-        650,    ; ширина окна
-        650,    ; высота окна
-        NULL,   ; описатель родительского окна
-        NULL,   ; описатель главного меню (для главного окна)
-        [hIns], ; идентификатор приложения
+    invoke CreateWindowEx,\ 
+        WS_EX_CONTROLPARENT or WS_EX_APPWINDOW,\
+        $CTA0(AppWindowName),\
+        $CTA0("Mouse example"),\
+        WS_OVERLAPPEDWINDOW,\
+        10,\
+        10,\
+        650,\
+        650,\
+        NULL,\
+        NULL,\
+        [hIns],\ 
         NULL
     mov [hwnd], eax
     
@@ -215,11 +218,16 @@ WndProcMain proc hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
     local hdc:HDC
     local pen:HPEN
     local ps:PAINTSTRUCT
+	local x:DWORD
+	local y:DWORD
 
     .if [iMsg] == WM_CREATE
         ; создание окна
-        
+        invoke CreateControlWindowsMain, hwnd;
         xor eax, eax
+        ret
+	.elseif [iMsg] == WM_SIZE
+        invoke ProcessingSizeEvent, hwnd, iMsg, wParam, lParam
         ret
     .elseif [iMsg] == WM_DESTROY
         ; закрытие окна
@@ -227,9 +235,69 @@ WndProcMain proc hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
         invoke PostQuitMessage, 0
         xor eax, eax
         ret
-    .elseif [iMsg] == WM_SIZE
-        invoke ProcessingSizeEvent, hwnd, iMsg, wParam, lParam
-        ret
+    .elseif [iMsg] == WM_MOUSEMOVE
+            ; младшее слово содержит Х-координату
+			mov eax, lParam
+			and eax, 0FFFFh
+			mov x, eax
+            ; старшее слово содержит У-координату
+			mov eax, lParam
+			and eax, 0FFFF0000h
+			mov y, eax
+			shr y, 16
+
+            invoke sprintf, offset buf, $CTA0("x = %d\ny = %d"), x, y;
+
+            ; помещаем текст в статическое окно
+            invoke SetWindowText, HwndStatic1, offset buf;
+			xor eax, eax
+            ret;
+
+        ; сообщение посылается при нажатии левой кнопки мыши в окне
+       .elseif [iMsg] == WM_LBUTTONDOWN
+            ; младшее слово содержит Х-координату
+			mov eax, lParam
+			and eax, 0FFFFh
+			mov x, eax
+            ; старшее слово содержит У-координату
+			mov eax, lParam
+			and eax, 0FFFF0000h
+			mov y, eax
+			shr y, 16
+            invoke sprintf, offset buf, $CTA0("Нажата левая кнопка мыши в точке (%d,%d)\r\n"), x, y;
+            invoke InsertStringTailEdit, offset buf;
+			xor eax, eax
+            ret;
+
+        ; сообщение посылается при отпусании левой кнопки мыши
+        .elseif [iMsg] == WM_LBUTTONUP
+            invoke InsertStringTailEdit, $CTA0("Отпущена левая кнопка мыши\r\n");
+            xor eax, eax
+            ret;
+
+        ; сообщение посылается при двойном клике левой кнопкой мыши
+        .elseif [iMsg] == WM_LBUTTONDBLCLK
+            invoke InsertStringTailEdit, $CTA0("Дважды нажата левая кнопка мыши\r\n");
+           xor eax, eax
+            ret;
+
+        ; сообщение посылается при нажатии правой кнопки мыши
+        .elseif [iMsg] == WM_RBUTTONDOWN
+            invoke InsertStringTailEdit, $CTA0("Нажата правая кнопка мыши\r\n");
+			xor eax, eax
+            ret;
+
+        ; сообщение посылается при отпускании правой кнопки мыши
+       .elseif [iMsg] == WM_RBUTTONUP
+            invoke InsertStringTailEdit, $CTA0("Отпущена правая кнопка мыши\r\n");
+            xor eax, eax
+            ret;
+
+        ; сообщение посылается при двойном клике правой кнопки мыши
+        .elseif [iMsg] == WM_RBUTTONDBLCLK
+            invoke InsertStringTailEdit, $CTA0("Дважды нажата правая кнопка мыши\r\n");
+            xor eax, eax
+            ret;
     .endif
     
     ; Необработанные сообщения направляются в функцию
@@ -245,6 +313,7 @@ WndProcMain endp
 ProcessingSizeEvent proc hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 	local nWidth:DWORD
 	local nHeight:DWORD
+	local Y:DWORD
 	; младшее слово параметра lParam содержит новую ширину окна
 	mov eax, lParam
 	and eax, 0FFFFh
@@ -260,13 +329,18 @@ ProcessingSizeEvent proc hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 
 	mov eax, glWindowMainHeight
 	mov nHeight, eax
+	shr nHeight, 16
 	sub nHeight, 120
 	shr nHeight, 1
+
+	mov eax, 110
+	add eax, nHeight
+	mov Y, eax
     ; изменяем размер текстового поля пропорционально размерам главного окна
     invoke MoveWindow,
                HwndEdit1,   ; описатель перемещаемого окна
                10,          ; Х-координата левого верхнего угла
-               100,         ; У-координата левого верхнего угла
+               Y,         ; У-координата левого верхнего угла
                nWidth,    ; ширина
                nHeight,  ; высота
                TRUE         ; флаг необходимости перерисовки
