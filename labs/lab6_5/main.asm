@@ -92,7 +92,7 @@ FilterBuf proc C dstBuf:dword, srcBuf:dword, srcBufSize:dword, cmpFun:dword
 	.while ecx < srcBufSize
 		push [esi]
 		call dword ptr [cmpFun]
-		.if eax == 1
+		.if eax != 0 
 			mov eax, [esi]
 			mov [edi], eax
 			add edi, 4
