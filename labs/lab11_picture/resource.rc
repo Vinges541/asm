@@ -1,0 +1,56 @@
+#include <windows.h>
+
+
+#define IDM_OPEN    201
+#define IDM_OPEN2   202
+#define IDM_SAVE    203
+#define IDM_INVERT  204
+#define IDM_GRAYSTYLE   205
+
+#define IDM_INCBRIGHTNESS 206
+#define IDM_DECBRIGHTNESS 207
+#define IDM_BLACKANDWHITE 208
+#define IDM_REFLECTVERTICAL 209
+#define IDM_REFLECTHORIZONTAL 210
+#define IDM_TURNLEFT 211
+#define IDM_TURNRIGHT 212
+#define IDM_GLUE 213
+
+MainIcon    ICON    "icon.ico"
+
+Bitmap1     BITMAP  "bitmap.bmp"
+
+
+MainMenu    MENU {
+	POPUP "&Ё"
+		{
+		MENUITEM "&Открыть\tCtrl+o", IDM_OPEN
+        MENUITEM "Открыть из &ресурсов", IDM_OPEN2
+        MENUITEM "&Сохранить\tCtrl+s", IDM_SAVE
+        MENUITEM "&Преобразовать\tCtrl+i", IDM_INVERT
+        MENUITEM "&Оттенки серого\tCtrl+g", IDM_GRAYSTYLE
+
+		MENUITEM "&Увеличить яркость\tCtrl+B", IDM_INCBRIGHTNESS
+		MENUITEM "&Уменьшить яркость\tShift+B", IDM_DECBRIGHTNESS
+		MENUITEM "&Чёрно-белое изображение\tCtrl+M", IDM_BLACKANDWHITE
+		MENUITEM "&Отразить по вертикали\tShift+V", IDM_REFLECTVERTICAL
+		MENUITEM "&Отразить по горизонтали\tShift+H", IDM_REFLECTHORIZONTAL
+		MENUITEM "&Повернуть влево\tCtrl+L", IDM_TURNLEFT
+		MENUITEM "&Повернуть вправо\tCtrl+R", IDM_TURNRIGHT
+		MENUITEM "&Склеить", IDM_GLUE
+		}
+	}
+
+Accel   ACCELERATORS {
+	"^o", IDM_OPEN
+    "^s", IDM_SAVE
+    "^i", IDM_INVERT
+    "^g", IDM_GRAYSTYLE
+	"^b", IDM_INCBRIGHTNESS
+	"B", IDM_DECBRIGHTNESS
+	"^m", IDM_BLACKANDWHITE
+	"V", IDM_REFLECTVERTICAL
+	"H", IDM_REFLECTHORIZONTAL
+	"^l", IDM_TURNLEFT
+	"^r", IDM_TURNRIGHT
+}
