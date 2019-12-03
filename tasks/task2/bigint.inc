@@ -18,7 +18,7 @@ bignum_printf proto bn:ptr bignum
 my_strtoul proto start_str:ptr byte, end_str:ptr byte
 
 ;Инициализация нулём
-bignum_init_null proto bn:ptr bignum
+bignum_init_null proto bn:dword ;bn - это  **bignum
 
 ;Устранение "минус нуля"
 bignum_zeronull_fix proto bn:ptr bignum

@@ -24,7 +24,9 @@ bignum_printf proc uses esi edx bn:ptr bignum
 	mov esi,[bn]
 	assume esi:ptr bignum
 	
-	invoke crt_printf, $CTA0("%X"), [esi].sign
+	.if [esi].sign != 0
+		invoke crt_printf, $CTA0("\-")
+	.endif
 
 	.if [esi].container != 0
 
@@ -35,18 +37,17 @@ bignum_printf proc uses esi edx bn:ptr bignum
 		mov ecx, eax
 
 		mov edx, [esi].container
-		add edx, ecx
-		invoke crt_printf, $CTA0("%X"), dword ptr [edx]
+		mov ecx, edx
+		add ecx, eax
+		
+		invoke crt_printf, $CTA0("%X"), dword ptr [ecx]
 		sub ecx, sizeof(dword);sizeof ptr digit
 
 		.while	ecx >= edx
 			
-			
-			add edx, ecx
-			invoke crt_printf, $CTA0("%08X"), dword ptr [edx]
+			invoke crt_printf, $CTA0("%08X"), dword ptr [ecx]
 			sub ecx, sizeof(dword)
 
-			mov edx, [esi].container
 		.endw
 	.endif
 	xor eax, eax
@@ -95,24 +96,43 @@ my_strtoul proc uses esi start_str:ptr byte, end_str:ptr byte
 my_strtoul endp
 
 ;Инициализация нулём
-bignum_init_null proc uses edi bn:ptr bignum
+bignum_init_null proc uses edi bn:dword
 	
-	mov edi,[bn]
+	invoke crt_malloc, sizeof(bignum)
+	.if eax == NULL
+		mov eax, 1
+		ret
+	.endif
+	mov edi, bn
+	mov dword ptr [edi], eax
+	mov edi, dword ptr [edi]
 	assume edi:ptr bignum
 
-	mov [edi].digits, 0
+	mov [edi].digits, 1
 	mov [edi].sign, NONNEG
-	mov [edi].container, NULL
 
+	invoke crt_malloc, sizeof(dword)
+	.if eax == NULL
+		mov eax, 1
+		ret
+	.endif
+	mov [edi].container, eax
+
+	mov edx, [edi].container
+	mov dword ptr [edx], 0
+
+
+	xor eax, eax
 	ret
 bignum_init_null endp
 
 ;Устранение "минус нуля"
-bignum_zeronull_fix proc uses edi bn:ptr bignum
+bignum_zeronull_fix proc uses edi edx bn:ptr bignum
 
 	mov edi,[bn]
 	assume edi:ptr bignum
-	.if [edi].digits == 1 && [edi].sign == NEGATIVE && [edi].container[0] == 0
+	mov edx, [edi].container
+	.if [edi].digits == 1 && [edi].sign == NEGATIVE && dword ptr [edx] == 0
 		mov [edi].sign, NONNEG
 	.endif
 	ret
@@ -394,9 +414,8 @@ main proc argc:dword, argv:dword, envp:dword
 	local bn:ptr bignum
 	local num:dword
 	mov num, 0FFFFFFFFh
-	invoke crt_malloc, sizeof(bignum)
-	mov bn, eax
-	invoke bignum_init_null, bn
+	
+	invoke bignum_init_null, addr bn
 	invoke bignum_printf, bn
 
 	invoke crt_printf, $CTA0("\n")
