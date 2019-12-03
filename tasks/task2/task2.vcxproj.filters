@@ -15,16 +15,37 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="task2.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bigint.inc">
+      <Filter>Файлы заголовков</Filter>
+    </None>
+    <None Include="Strings.mac">
+      <Filter>Файлы заголовков</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="task2.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="bigint.c">
+    <ClCompile Include="BigInteger.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="task2.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
+    <ClInclude Include="BigInteger.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="bigint.asm">
+      <Filter>Исходные файлы</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

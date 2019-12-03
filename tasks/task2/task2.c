@@ -1,22 +1,34 @@
-#include <string.h>
+п»ї#include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define BIGNUM_BASE 0x100000000
+const unsigned long long BIGNUM_BASE = 0x100000000;
+#define NEG 1
+#define NONNEG 0
 
 typedef unsigned int digit;
 
 typedef struct _bignum {
 
 	unsigned int size;
-	char sign;
+	unsigned int sign;
 	digit* container;
 }bignum;
 
-errno_t bignum_init_null (bignum *bn, unsigned int chunk_count)
+void bignum_printf (FILE* const _Stream, const bignum *bn)
 {
+	if(bn->sign == NEG)
+		fprintf(_Stream, "\-");
 
+	if (bn->container != NULL) 
+	{
+		fprintf(_Stream, "%X", bn->container[bn->size - 1]);
+		for (int i = bn->size - 2; i >= 0; --i)
+		{
+			fprintf(_Stream, " %08X", bn->container[i]);
+		}
+	}
 }
 
 unsigned int my_strtoul(const char* start, const char* end) 
@@ -39,17 +51,50 @@ unsigned int my_strtoul(const char* start, const char* end)
 	return num;
 }
 
-//Инициализация большого числа строкой шестнадцатиричных символов
+void bignum_init_null(bignum* bn) 
+{
+	bn->size = 0;
+	bn->sign = NONNEG;
+	bn->container = NULL;
+}
+
+void bignum_shrink_to_fit(bignum* bn) 
+{
+	int i = bn->size - 1;
+	while (i >= 0) 
+	{
+		if (bn->container[i] != 0)
+			break;
+		--i;
+	}
+	if (i < 0) 
+	{
+		i = 1;
+	}
+	else 
+	{
+		++i;
+	}
+	bn->size = i;
+	bn->container = (digit*)realloc(bn->container, bn->size * sizeof(digit));
+}
+
+void bignum_zeronull_fix(bignum* bn) 
+{
+	if (bn->size == 1 && bn->sign == NEG && bn->container[0] == 0)
+		bn->sign = NONNEG;
+}
+//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РѕР»СЊС€РѕРіРѕ С‡РёСЃР»Р° СЃС‚СЂРѕРєРѕР№ С€РµСЃС‚РЅР°РґС†Р°С‚РёСЂРёС‡РЅС‹С… СЃРёРјРІРѕР»РѕРІ
 errno_t bignum_set_str (bignum *bn, const char *str) 
 {
 	if (*str == '-')
 	{
-		bn->sign = -1;
+		bn->sign = NEG;
 		++str;
 	}
 	else
 	{
-		bn->sign = 1;
+		bn->sign = NONNEG;
 	}
 	size_t length = strlen(str);
 	if (length < 8)
@@ -58,7 +103,7 @@ errno_t bignum_set_str (bignum *bn, const char *str)
 	}
 	else
 	{
-		//8 16-ых разрядов умещается в 1 unsigned int
+		//8 16-С‹С… СЂР°Р·СЂСЏРґРѕРІ СѓРјРµС‰Р°РµС‚СЃСЏ РІ 1 unsigned int
 		bn->size = length / 8;
 		if (length % 8 != 0)
 		{
@@ -72,31 +117,55 @@ errno_t bignum_set_str (bignum *bn, const char *str)
 			return 1;
 		++tmp;
 	}
-	bn->container = (digit*)malloc(bn->size);
+	--tmp;
+
+	if (bn->container != NULL)
+		free(bn->container);
+	bn->container = (digit*)malloc(bn->size * sizeof(digit));
+
 	if (bn->container == NULL)
 		return 1;
 
+	char* end_substr = tmp;
+	char* start_substr = tmp - 8 > str ? tmp - 8 : str;
+	if (end_substr < start_substr)
+		end_substr = start_substr;
+	unsigned int i = 0;
+	while (i < bn->size)
+	{
+		bn->container[i] = my_strtoul(start_substr, end_substr);
+		
+		end_substr -= 8;
+		start_substr = start_substr - 8 > str ? start_substr - 8 : str;
+		if (end_substr < start_substr)
+			end_substr = start_substr;
+		++i;
+	}
 	return 0;
 }
 
-//Инициализация большого числа числом типа unsigned int
+//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РѕР»СЊС€РѕРіРѕ С‡РёСЃР»Р° С‡РёСЃР»РѕРј С‚РёРїР° unsigned int
 errno_t bignum_set_ui (bignum *bn, unsigned int number)
 {
 	bn->size = 1;
-	bn->sign = 1;
-	bn->container = (digit*)malloc(bn->size);
-	bn->container[0] = number;
+	bn->sign = NONNEG;
+	if (bn->container != NULL)
+		free(bn->container);
+	bn->container = (digit*)malloc(bn->size * sizeof(digit));
 	if (bn->container == NULL)
 		return 1;
+	bn->container[0] = number;
 	return 0;
 }
 
-//Инициализация большого числа числом типа int
+//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РѕР»СЊС€РѕРіРѕ С‡РёСЃР»Р° С‡РёСЃР»РѕРј С‚РёРїР° int
 errno_t bignum_set_i (bignum *bn, int number)
 {
 	bn->size = 1;
-	bn->sign = number < 0 ? -1 : 1;
-	bn->container = (digit*)malloc(bn->size);
+	bn->sign = number < 0 ? NEG : NONNEG;
+	if (bn->container != NULL)
+		free(bn->container);
+	bn->container = (digit*)malloc(bn->size*sizeof(digit));
 	if (number < 0) 
 	{
 		bn->container[0] = -number;
@@ -110,99 +179,152 @@ errno_t bignum_set_i (bignum *bn, int number)
 	return 0;
 }
 
-//Сложение двух больших чисел; res = lhs + rhs
+//РЎР»РѕР¶РµРЅРёРµ РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs + rhs
 errno_t bignum_add (bignum *res, const bignum *lhs, const bignum *rhs)
 {
 
 }
 
-//Вычитание двух больших чисел; res = lhs - rhs
+//Р’С‹С‡РёС‚Р°РЅРёРµ РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs - rhs
 errno_t bignum_sub ( bignum *res, const bignum *lhs, /*const*/ bignum *rhs)
 {
-	rhs->sign = rhs->sign == 1 ? -1 : 1;
+	rhs->sign = rhs->sign == NONNEG ? NEG : NONNEG;
 	errno_t ret = bignum_add(res, lhs, rhs);
-	rhs->sign = rhs->sign == 1 ? -1 : 1;
+	rhs->sign = rhs->sign == NONNEG ? NEG : NONNEG;
 	return ret;
 }
 
-//Побитовое ИСКЛЮЧАЮЩЕЕ ИЛИ двух больших чисел; res = lhs ^ rhs
+//РџРѕР±РёС‚РѕРІРѕРµ РРЎРљР›Р®Р§РђР®Р©Р•Р• РР›Р РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs ^ rhs
 errno_t bignum_xor ( bignum *res, const bignum *lhs, const bignum *rhs)
 {
-
+	if (lhs->size > rhs->size) 
+	{
+		bignum_cpy(res, lhs);
+	}
+	else 
+	{
+		bignum_cpy(res, rhs);
+		rhs = lhs;
+	}
+	unsigned int i;
+	for (i = 0; i < rhs->size; ++i) 
+	{
+		res->container[i] ^= rhs->container[i];
+	}
+	res->sign ^= rhs->sign;
+	bignum_shrink_to_fit(res);
+	bignum_zeronull_fix(res);
+	return 0;
 }
 
-//Побитовое ИЛИ двух больших чисел; res = lhs | rhs
+//РџРѕР±РёС‚РѕРІРѕРµ РР›Р РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs | rhs
 errno_t bignum_or( bignum *res, const bignum *lhs, const bignum *rhs)
 {
-
+	if (lhs->size > rhs->size)
+	{
+		bignum_cpy(res, lhs);
+	}
+	else
+	{
+		bignum_cpy(res, rhs);
+		rhs = lhs;
+	}
+	unsigned int i;
+	for (i = 0; i < rhs->size; ++i)
+	{
+		res->container[i] |= rhs->container[i];
+	}
+	res->sign |= rhs->sign;
+	bignum_shrink_to_fit(res);
+	bignum_zeronull_fix(res);
+	return 0;
 }
 
-//Побитовое И двух больших чисел; res = lhs & rhs
+//РџРѕР±РёС‚РѕРІРѕРµ Р РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs & rhs
 errno_t bignum_and ( bignum *res, const bignum *lhs, const bignum *rhs)
 {
-
+	if (lhs->size > rhs->size)
+	{
+		bignum_cpy(res, lhs);
+	}
+	else
+	{
+		bignum_cpy(res, rhs);
+		rhs = lhs;
+	}
+	unsigned int i;
+	for (i = 0; i < rhs->size; ++i)
+	{
+		res->container[i] &= rhs->container[i];
+	}
+	res->sign &= rhs->sign;
+	bignum_shrink_to_fit(res);
+	bignum_zeronull_fix(res);
+	return 0;
 }
 
-//Умножение большого числа на unsigned int; res = lhs * rhs
+//РЈРјРЅРѕР¶РµРЅРёРµ Р±РѕР»СЊС€РѕРіРѕ С‡РёСЃР»Р° РЅР° unsigned int; res = lhs * rhs
 errno_t bignum_mul_ui ( bignum *res, const bignum *lhs, unsigned int rhs)
 {
-	/*
-	const unsigned long long base = 4294967296;
-	class BigInteger
-	{
-		std::vector<unsigned int> digits;
-	public:
-		BigInteger(unsigned int num);
-		~BigInteger();
-		BigInteger& operator*=(const unsigned int& rhs);
-		void print();
-	};
-	unsigned __int64 mult_res = 0, transfer = 0, total_res = 0;
+	bignum_cpy(res, lhs);
+	unsigned long long mult_res = 0, transfer = 0, total_res = 0;
 	unsigned int i = 0;
+	unsigned int new_size = res->size;
 	do
 	{
-		if (i < digits.size())
+		if (i < res->size)
 		{
-			mult_res = static_cast<unsigned __int64>(digits[i])*
-				static_cast<unsigned __int64>(num);
-			total_res = mult_res % base + transfer;
-			transfer = mult_res / base + total_res / base;
-			digits[i] = total_res % base;
+			mult_res = (unsigned long long)res->container[i]*(unsigned long long)rhs;
+			total_res = mult_res % BIGNUM_BASE + transfer;
+			transfer = mult_res / BIGNUM_BASE + total_res / BIGNUM_BASE;
+			res->container[i] = total_res % BIGNUM_BASE;
 		}
 		else
 		{
-			digits.push_back(transfer % base);
-			transfer /= base;
+			++res->size;
+			res->container = (digit*)realloc(res->container, res->size * sizeof(digit));
+			res->container[i] = transfer % BIGNUM_BASE;
+			transfer /= BIGNUM_BASE;
 		}
 		++i;
 	} while (transfer != 0);
-	*/
 }
 
-//Умножение двух больших чисел; res = lhs * rhs
+//РЈРјРЅРѕР¶РµРЅРёРµ РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs * rhs
 errno_t bignum_mul ( bignum *res, const bignum *lhs, const bignum *rhs)
 {
 
 }
 
-//Деление двух больших чисел; res lhs / rhs;
+//Р”РµР»РµРЅРёРµ РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs / rhs;
 errno_t bignum_div ( bignum *res, const bignum *lhs, const bignum *rhs)
 {
 
 }
 
-//Остаток от деления двух больших чисел; res = lhs % rhs
+//РћСЃС‚Р°С‚РѕРє РѕС‚ РґРµР»РµРЅРёСЏ РґРІСѓС… Р±РѕР»СЊС€РёС… С‡РёСЃРµР»; res = lhs % rhs
 errno_t bignum_mod ( bignum *res,  bignum *lhs, const bignum *rhs)
 {
 
 }
 
-errno_t bignum_cpy(bignum* lhs, const bignum* rhs)
+errno_t bignum_cpy(bignum* dst, const bignum* src)
 {
-	lhs->sign = rhs->sign;
+	dst->size = src->size;
+	if (dst->container != NULL)
+		free(dst->container);
+	dst->container = (digit*)malloc(dst->size * sizeof(digit));
+	dst->sign = src->sign;
+	memcpy_s(dst->container, dst->size*sizeof(digit), src->container, src->size * sizeof(digit));
 }
 
-//Возведение большого числа в n-ную степень; res = lhs^n
+void bignum_free(bignum* bn) 
+{
+	free(bn->container);
+	free(bn);
+}
+
+//Р’РѕР·РІРµРґРµРЅРёРµ Р±РѕР»СЊС€РѕРіРѕ С‡РёСЃР»Р° РІ n-РЅСѓСЋ СЃС‚РµРїРµРЅСЊ; res = lhs^n
 errno_t bignum_pow ( bignum *res, const bignum *lhs, unsigned int n)
 {
 	for (;n > 0;--n) 
@@ -214,9 +336,12 @@ errno_t bignum_pow ( bignum *res, const bignum *lhs, unsigned int n)
 
 int main() 
 {
-	bignum* bn = (bignum*) malloc(sizeof(bignum));
-	//bignum_set_str(bn, "FFFFFFFF");
-	const char number[] = "FF";
-	//printf("%u", my_strtoul(number, number + strlen(number)-1));
-	printf("%u", 3244324334 ^ 654789514UL);
+	bignum* res = (bignum*)malloc(sizeof(bignum));
+	bignum_init_null(res);
+	bignum_set_str(res, "FFFFFFFF");
+	bignum_mul_ui(res, res, 0xFFFFFFFF);
+	bignum_printf(stdout, res);
+	bignum_free(res);
+	
+	return 0;
 }
