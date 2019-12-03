@@ -21,11 +21,12 @@ NULL equ 0
 ;Вывод большого числа
 bignum_printf proc uses esi edx bn:ptr bignum
 
+	local save_ecx:dword
 	mov esi,[bn]
 	assume esi:ptr bignum
 	
 	.if [esi].sign != 0
-		invoke crt_printf, $CTA0("\-")
+		invoke crt_printf, $CTA0("%c"), 45
 	.endif
 
 	.if [esi].container != 0
@@ -40,12 +41,16 @@ bignum_printf proc uses esi edx bn:ptr bignum
 		mov ecx, edx
 		add ecx, eax
 		
+		mov save_ecx, ecx
 		invoke crt_printf, $CTA0("%X"), dword ptr [ecx]
+		mov ecx, save_ecx
 		sub ecx, sizeof(dword);sizeof ptr digit
 
 		.while	ecx >= edx
-			
+
+			mov save_ecx, ecx
 			invoke crt_printf, $CTA0("%08X"), dword ptr [ecx]
+			mov ecx, save_ecx
 			sub ecx, sizeof(dword)
 
 		.endw
@@ -235,12 +240,18 @@ bignum_set_i proc uses edi ebx edx bn:ptr bignum, number:dword
 	mov edi,[bn]
 	assume edi:ptr bignum
 	mov [edi].digits, 1
-	.if dword ptr [number] < 0
-		mov [edi].sign, NEGATIVE
-	.else
-		mov [edi].sign, NONNEG
-	.endif
+
+	cmp dword ptr [number], 0
+	jge less_zero
+	mov [edi].sign, NEGATIVE
+	neg number
+	jmp end_less_zero
+
+	less_zero:
+	mov [edi].sign, NONNEG
 	
+	end_less_zero:
+
 	.if [edi].container != NULL
 		invoke crt_free, [edi].container
 	.endif
@@ -255,9 +266,6 @@ bignum_set_i proc uses edi ebx edx bn:ptr bignum, number:dword
 	.endif
 	mov [edi].container, eax
 
-	.if dword ptr [number] < 0
-		neg number
-	.endif
 	mov eax, number
 	mov edx, [edi].container
 	mov dword ptr [edx], eax
@@ -408,25 +416,5 @@ bignum_pow proc uses ecx res:ptr bignum, lhs:ptr bignum, exp:dword
 	ret
 
 bignum_pow endp
-
-main proc argc:dword, argv:dword, envp:dword
-	
-	local bn:ptr bignum
-	local num:dword
-	mov num, 0FFFFFFFFh
-	
-	invoke bignum_init_null, addr bn
-	invoke bignum_printf, bn
-
-	invoke crt_printf, $CTA0("\n")
-
-	invoke bignum_set_ui, bn, num
-	invoke bignum_printf, bn
-
-	invoke bignum_free, bn
-	mov eax, 0
-	ret
-
-main endp
 
 end

@@ -339,6 +339,7 @@ int main()
 	bignum* res = (bignum*)malloc(sizeof(bignum));
 	bignum_init_null(res);
 	bignum_set_str(res, "FFFFFFFF");
+	bignum_set_i(res, -215467);
 	bignum_mul_ui(res, res, 0xFFFFFFFF);
 	bignum_printf(stdout, res);
 	bignum_free(res);

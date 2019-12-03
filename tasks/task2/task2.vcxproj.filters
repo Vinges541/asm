@@ -47,5 +47,8 @@
     <MASM Include="bigint.asm">
       <Filter>Исходные файлы</Filter>
     </MASM>
+    <MASM Include="main.asm">
+      <Filter>Исходные файлы</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
