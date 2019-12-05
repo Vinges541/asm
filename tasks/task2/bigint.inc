@@ -1,6 +1,6 @@
 NONNEG equ 0
 NEGATIVE equ 1
-BIGINT_BASE equ 100000000h
+NULL equ 0
 
 digit typedef dword
 
@@ -47,8 +47,8 @@ bignum_or proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 ;Побитовое И двух больших чисел; res = lhs & rhs
 bignum_and proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
-;Умножение большого числа на unsigned int; res = lhs * rhs
-bignum_mul_ui proto res:ptr bignum, lhs:ptr bignum, rhs:dword
+;Умножение большого числа на unsigned int; res = bn * num
+bignum_mul_ui proto res:ptr bignum, bn:ptr bignum, num:dword
 
 ;Умножение двух больших чисел; res = lhs * rhs
 bignum_mul proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
@@ -61,6 +61,9 @@ bignum_mod proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 ;Копирование больших чисел; lhs = rhs
 bignum_cpy proto lhs:ptr bignum, rhs:ptr bignum
+
+
+bignum_shrink_to_fit proto bn:ptr bignum
 
 ;Освобождение памяти большого числа
 bignum_free proto bn:ptr bignum

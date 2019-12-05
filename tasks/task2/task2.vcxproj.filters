@@ -28,22 +28,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="task2.c">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="BigInteger.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BigInteger.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <MASM Include="bigint.asm">
       <Filter>Исходные файлы</Filter>
     </MASM>
