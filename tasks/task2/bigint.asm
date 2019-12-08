@@ -8,16 +8,12 @@ include c:\masm32\include\msvcrt.inc
 include Strings.mac
 include bigint.inc
 
-.data
-
-.data?
-
-.const
+DEBUG equ 0
 
 .code
 
 ;Вывод большого числа
-bignum_printf proc uses esi edx bn:ptr bignum
+bignum_printf proc uses esi ebx edx ecx bn:ptr bignum
 
 	mov esi,[bn]
 	assume esi:ptr bignum
@@ -93,7 +89,7 @@ my_strtoul proc uses esi start_str:ptr byte, end_str:ptr byte
 my_strtoul endp
 
 ;Инициализация нулём
-bignum_init_null proc uses edi bn:dword
+bignum_init_null proc uses edi edx bn:dword
 	
 	invoke crt_malloc, sizeof(bignum)
 	.if eax == NULL
@@ -172,7 +168,7 @@ bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 		.endif
 	.endif
 		
-	mov eax, [cstr]
+	mov eax, esi
 	mov [tmp], eax
 	mov al, byte ptr [eax]
 	.while al
@@ -315,22 +311,90 @@ bignum_set_i proc uses edi ebx edx bn:ptr bignum, number:dword
 bignum_set_i endp
 
 ;Сложение двух больших чисел; res = lhs + rhs
-bignum_add proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
+	mov eax, [rhs]
+	mov eax, [eax].bignum.sign
+
+	mov ebx, [lhs]
+	mov ebx, [ebx].bignum.sign
+	.if ebx == eax
+
+	mov eax, [rhs]
+	mov eax, [eax].bignum.digits
+
+	mov ebx, [lhs]
+	mov ebx, [ebx].bignum.digits
+	.if ebx < eax
+		push rhs
+		push lhs
+		pop rhs
+		pop lhs
+	.endif
+	invoke bignum_cpy, res, lhs
+
+	mov edi, res
+	assume edi:ptr bignum
+
+	mov esi, rhs
+	assume esi:ptr bignum
+
+	inc [edi].digits
+	mov eax, [edi].digits
+	mov ebx, sizeof(digit)
+	mul ebx
+	push eax
+	invoke crt_realloc, [edi].container, eax
+	mov [edi].container, eax
+	pop eax
+	add eax, [edi].container
+	sub eax, sizeof(digit)
+	mov dword ptr [eax], 0
+
+	mov ecx, 0
+	mov edx, [esi].container
+	mov eax, [edi].container
+	clc
+	pushf
+	.while ecx < [esi].digits
+		
+		mov ebx, dword ptr [edx]
+		popf
+		adc dword ptr [eax], ebx
+		pushf
+		add edx, sizeof(digit)
+		add eax, sizeof(digit)
+		inc ecx
+	.endw
+	popf
+	adc dword ptr [eax], 0
+
+	
+.else
+	
+.endif
+
+	invoke bignum_shrink_to_fit, res
+	invoke bignum_zeronull_fix, res
+
+	xor eax, eax
+	ret
 bignum_add endp
 
 ;Вычитание двух больших чисел; res = lhs - rhs
-bignum_sub proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_sub proc uses edi res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 	
-	xor [rhs].bignum.sign, NEGATIVE
+	mov edi, rhs
+	assume edi:ptr bignum
+	xor [edi].sign, NEGATIVE
 	invoke bignum_add, res, lhs, rhs
-	xor [rhs].bignum.sign, NEGATIVE
+	xor [edi].sign, NEGATIVE
 	ret
 
 bignum_sub endp
 
 ;Побитовое ИСКЛЮЧАЮЩЕЕ ИЛИ двух больших чисел; res = lhs ^ rhs
-bignum_xor proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_xor proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	mov eax, lhs
 	assume eax:ptr bignum
@@ -387,7 +451,7 @@ bignum_xor proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 bignum_xor endp
 
 ;Побитовое ИЛИ двух больших чисел; res = lhs | rhs
-bignum_or proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_or proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	mov eax, lhs
 	assume eax:ptr bignum
@@ -444,7 +508,7 @@ bignum_or proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 bignum_or endp
 
 ;Побитовое И двух больших чисел; res = lhs & rhs
-bignum_and proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_and proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	mov eax, lhs
 	assume eax:ptr bignum
@@ -590,9 +654,83 @@ bignum_mul_ui proc uses edi ecx ebx res:ptr bignum, bn:ptr bignum, num:dword
 
 bignum_mul_ui endp
 
-;Умножение двух больших чисел; res = lhs * rhs
-bignum_mul proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_shl proc uses edi ecx edx bn:ptr bignum, number:dword
+	mov edi, bn
+	assume edi:ptr bignum
+	mov eax, number
+	.if number == 0
+		ret
+	.endif
+	push [edi].digits
+	add [edi].digits, eax
+	mov eax, [edi].digits
+	shl eax, 2 ;*sizeof(digit)
+	invoke crt_realloc, [edi].container, eax
+	mov [edi].container, eax
+	mov ecx, eax
+	mov edx, [edi].digits
+	dec edx
+	shl edx, 2
+	add edx, [edi].container
+	pop eax
+	dec eax
+	shl eax, 2
+	add ecx, eax
+	push edx
+	.while edx > ecx
+		mov dword ptr [edx], 0
+		sub edx, sizeof(digit)
+	.endw
+	pop edx
+	.while ecx >= [edi].container
+		mov eax, dword ptr [edx]
+		xchg dword ptr [ecx], eax
+		mov dword ptr [edx], eax
+		sub edx, sizeof(digit)
+		sub ecx, sizeof(digit)
+	.endw
+	xor eax, eax
+	ret
+bignum_shl endp
 
+;Умножение двух больших чисел; res = lhs * rhs
+bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+
+	local inter_res:ptr bignum
+	invoke bignum_init_null, addr inter_res
+	invoke bignum_set_ui, res, 0
+
+	mov eax, [rhs]
+	mov eax, [eax].bignum.digits
+
+	mov ebx, [lhs]
+	mov ebx, [ebx].bignum.digits
+	.if ebx < eax
+		push rhs
+		push lhs
+		pop rhs
+		pop lhs
+	.endif
+	mov eax, res
+	mov ebx, lhs
+	mov ebx, [ebx].bignum.sign
+	mov [eax].bignum.sign, ebx
+	mov ecx, 0
+	mov esi, rhs
+	assume esi:ptr bignum
+	.while ecx < [esi].digits
+		push esi
+		mov esi, [esi].container
+		invoke bignum_mul_ui, inter_res, lhs, dword ptr [esi + ecx*4]
+		invoke bignum_shl, inter_res, ecx
+		invoke bignum_add, res, res, inter_res
+		pop esi
+		inc ecx
+	.endw
+
+	invoke bignum_free, inter_res
+	xor eax, eax
+	ret
 bignum_mul endp
 
 ;Деление двух больших чисел; res = lhs / rhs;
@@ -613,6 +751,10 @@ bignum_cpy proc uses edi esi ebx dst:ptr bignum, src:ptr bignum
 
 	mov esi,[src]
 	assume esi:ptr bignum
+	
+	.if edi == esi
+		ret
+	.endif
 
 	mov eax, [esi].digits
 	mov [edi].digits, eax
@@ -648,17 +790,18 @@ bignum_shrink_to_fit proc uses edi ecx bn:ptr bignum
 	assume edi:ptr bignum
 	mov ecx, [edi].digits
 	dec ecx
-	.while ecx >= 0
-		.if dword ptr [[edi].container+ecx*sizeof(digit)] != 0
+	shl ecx, 2
+	.while ecx > 0
+		mov eax, [edi].container
+		add eax, ecx
+		.if dword ptr [eax] != 0
 			.break
 		.endif
-		dec ecx
+		sub ecx, sizeof(digit)
 	.endw
-	.if ecx < 0
-		mov ecx, 1
-	.else
-		inc ecx
-	.endif
+	shr ecx, 2
+	inc ecx
+
 	.if [edi].digits == ecx
 		ret
 	.endif
@@ -672,14 +815,14 @@ bignum_shrink_to_fit proc uses edi ecx bn:ptr bignum
 
 bignum_shrink_to_fit endp
 
-bignum_free proc uses esi bn:ptr bignum
+bignum_free proc uses edi bn:ptr bignum
 	
-	mov esi,[bn]
-	assume esi:ptr bignum
-	.if [esi].container != NULL
-		invoke crt_free, [esi].container
+	mov edi, bn
+	assume edi:ptr bignum
+	.if [edi].container != NULL
+		invoke crt_free, [edi].container
 	.endif
-	invoke crt_free, esi
+	invoke crt_free, bn
 	ret
 bignum_free endp
 
