@@ -39,7 +39,6 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke bignum_printf, rhs
 	invoke crt_printf, $CTA0("\n")
 	
-	comment @
 	invoke bignum_add, res, lhs, rhs
 	invoke crt_printf, $CTA0("lhs + rhs = ")
 	invoke bignum_printf, res
@@ -64,8 +63,7 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke crt_printf, $CTA0("lhs*num = ")
 	invoke bignum_printf, res
 	invoke crt_printf, $CTA0("\n")
-	@
-
+	
 	invoke bignum_mul, res, lhs, rhs
 	invoke crt_printf, $CTA0("lhs * rhs = ")
 	invoke bignum_printf, res

@@ -310,46 +310,85 @@ bignum_set_i proc uses edi ebx edx bn:ptr bignum, number:dword
 
 bignum_set_i endp
 
-;Сложение двух больших чисел; res = lhs + rhs
-bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+bignum_zero_extend proc uses edi eax ebx bn:ptr bignum, add_digits:dword
 
-	mov eax, [rhs]
-	mov eax, [eax].bignum.sign
-
-	mov ebx, [lhs]
-	mov ebx, [ebx].bignum.sign
-	.if ebx == eax
-
-	mov eax, [rhs]
-	mov eax, [eax].bignum.digits
-
-	mov ebx, [lhs]
-	mov ebx, [ebx].bignum.digits
-	.if ebx < eax
-		push rhs
-		push lhs
-		pop rhs
-		pop lhs
+	.if add_digits == 0
+		ret
 	.endif
-	invoke bignum_cpy, res, lhs
-
-	mov edi, res
+	mov edi, bn
 	assume edi:ptr bignum
-
-	mov esi, rhs
-	assume esi:ptr bignum
-
-	inc [edi].digits
+	mov eax, add_digits
+	push [edi].digits
+	add [edi].digits, eax
 	mov eax, [edi].digits
-	mov ebx, sizeof(digit)
-	mul ebx
-	push eax
+	shl eax, 2
 	invoke crt_realloc, [edi].container, eax
 	mov [edi].container, eax
 	pop eax
+	dec eax
+	shl eax, 2
 	add eax, [edi].container
-	sub eax, sizeof(digit)
-	mov dword ptr [eax], 0
+	mov ebx, [edi].digits
+	dec ebx
+	shl ebx, 2
+	add ebx, [edi].container
+	.while ebx > eax
+		mov dword ptr [ebx], 0
+		sub ebx, sizeof(digit)
+	.endw
+	ret
+
+bignum_zero_extend endp
+
+
+;Сложение двух больших чисел; res = lhs + rhs
+bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
+
+	mov eax, [lhs]
+	mov eax, [eax].bignum.sign
+
+	mov ebx, [rhs]
+	mov ebx, [ebx].bignum.sign
+	.if eax == ebx
+
+	mov edi, res
+	assume edi:ptr bignum
+	assume esi:ptr bignum
+
+	.if edi == lhs
+		mov esi, rhs
+		mov eax, [edi].digits
+		sub eax, [esi].digits
+		.if CARRY?
+			neg eax
+		.endif
+		inc eax
+		invoke bignum_zero_extend, edi, eax
+	.elseif edi == rhs
+		mov esi, lhs
+		mov eax, [edi].digits
+		sub eax, [esi].digits
+		.if CARRY?
+			neg eax
+		.endif
+		inc eax
+		invoke bignum_zero_extend, edi, eax
+	.else 
+		mov eax, [lhs]
+		mov eax, [eax].bignum.digits
+
+		mov ebx, [rhs]
+		mov ebx, [ebx].bignum.digits
+		.if eax < ebx
+			push lhs
+			push rhs
+			pop lhs
+			pop rhs
+		.endif
+		mov esi, rhs
+		invoke bignum_cpy, res, lhs
+		invoke bignum_zero_extend, res, 1
+	.endif
 
 	mov ecx, 0
 	mov edx, [esi].container
@@ -727,7 +766,10 @@ bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr big
 		pop esi
 		inc ecx
 	.endw
-
+	mov edi, res
+	mov eax, rhs
+	mov eax, [eax].bignum.sign
+	xor [edi].bignum.sign, eax
 	invoke bignum_free, inter_res
 	xor eax, eax
 	ret
