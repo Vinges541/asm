@@ -62,6 +62,7 @@ bignum_mod proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 ;Копирование больших чисел; lhs = rhs
 bignum_cpy proto lhs:ptr bignum, rhs:ptr bignum
 
+bignum_move proto lhs:ptr bignum, rhs:ptr bignum
 
 bignum_shrink_to_fit proto bn:ptr bignum
 

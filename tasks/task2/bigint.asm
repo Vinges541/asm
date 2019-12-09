@@ -340,10 +340,51 @@ bignum_zero_extend proc uses edi eax ebx bn:ptr bignum, add_digits:dword
 
 bignum_zero_extend endp
 
+bignum_less proc uses edi esi ecx edx lhs:ptr bignum, rhs:ptr bignum
+	
+	mov eax, 0
+	mov edi, lhs
+	mov esi, rhs
+	assume edi:ptr bignum
+	assume esi:ptr bignum
+	mov ecx, [edi].digits
+	mov edx, [esi].digits
+	.if ecx < edx
+		mov eax, 1
+		ret
+	.elseif ecx > edx
+		ret
+	.endif
+	mov ecx, [edi].digits
+	dec ecx
+	mov edi, [edi].container
+	mov esi, [esi].container
+	push ecx
+	shl ecx, 2
+	add edi, ecx
+	add esi, ecx
+	pop ecx
+	start_cycle:
+	cmp ecx, 0
+	jl end_cycle
+	mov edx, dword ptr [esi]
+	.if dword ptr [edi] < edx
+		mov eax, 1
+		ret
+	.endif
+	sub edi, sizeof(digit)
+	sub esi, sizeof(digit)
+	dec ecx
+	jmp start_cycle
+	end_cycle:
+	ret
+bignum_less endp
 
 ;Сложение двух больших чисел; res = lhs + rhs
 bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
+	local result:ptr bignum
+	local change_sign:dword
 	mov eax, [lhs]
 	mov eax, [eax].bignum.sign
 
@@ -408,13 +449,72 @@ bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	popf
 	adc dword ptr [eax], 0
 
-	
-.else
-	
-.endif
-
 	invoke bignum_shrink_to_fit, res
 	invoke bignum_zeronull_fix, res
+
+.else
+	
+	mov change_sign, 0
+	invoke bignum_init_null, addr result
+	mov edi, result
+	assume edi:ptr bignum
+
+	.if eax == NEGATIVE
+		invoke bignum_less, rhs, lhs
+		.if eax == 1
+			mov change_sign, 1
+		.else
+			push lhs
+			push rhs
+			pop lhs
+			pop rhs
+		.endif
+	.else
+		invoke bignum_less, lhs, rhs
+		.if eax == 1
+			mov change_sign, 1
+			push lhs
+			push rhs
+			pop lhs
+			pop rhs
+		.endif
+	.endif
+
+	invoke bignum_cpy, result, lhs
+	mov esi, rhs
+	assume esi:ptr bignum
+	mov ecx, 0
+	mov edx, [esi].container
+	mov eax, [edi].container
+	clc
+	pushf
+	.while ecx < [esi].digits
+		
+		mov ebx, dword ptr [edx]
+		popf
+		sbb dword ptr [eax], ebx
+		.if CARRY?
+			neg dword ptr [eax]
+		.endif
+		pushf
+		add edx, sizeof(digit)
+		add eax, sizeof(digit)
+		inc ecx
+	.endw
+	popf
+
+	.if CARRY?
+		xor [edi].sign, NEGATIVE ;change_sign
+	.endif
+
+	.if change_sign == 1
+		xor [edi].digits, NEGATIVE
+	.endif
+	invoke bignum_shrink_to_fit, result
+	invoke bignum_zeronull_fix, result
+	invoke bignum_move, res, result
+	
+.endif
 
 	xor eax, eax
 	ret
@@ -825,6 +925,26 @@ bignum_cpy proc uses edi esi ebx dst:ptr bignum, src:ptr bignum
 	ret
 
 bignum_cpy endp
+
+bignum_move proc uses eax edi esi lhs:ptr bignum, rhs:ptr bignum
+
+	mov edi, lhs
+	mov esi, rhs
+	assume edi:ptr bignum
+	assume esi:ptr bignum
+	mov eax, [esi].digits
+	mov [edi].digits, eax
+	
+	mov eax, [esi].sign
+	mov [edi].sign, eax
+
+	mov eax, [esi].container
+	mov [edi].container, eax
+
+	mov [esi].container, NULL
+	invoke bignum_free, rhs
+	ret
+bignum_move endp
 
 bignum_shrink_to_fit proc uses edi ecx bn:ptr bignum
 
