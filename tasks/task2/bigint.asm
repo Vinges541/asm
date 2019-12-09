@@ -124,7 +124,8 @@ bignum_zeronull_fix proc uses edi edx bn:ptr bignum
 
 	mov edi,[bn]
 	assume edi:ptr bignum
-	.if [edi].digits == 1 && [edi].sign == NEGATIVE && dword ptr [[edi].container] == 0
+	mov edx, [edi].container
+	.if [edi].digits == 1 && [edi].sign == NEGATIVE && dword ptr [edx] == 0
 		mov [edi].sign, NONNEG
 	.endif
 	ret
@@ -236,7 +237,7 @@ bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 		
 		inc [i]
 	.endw
-	
+	xor eax, eax
 	ret
 bignum_set_str endp
 
@@ -504,12 +505,12 @@ bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	popf
 
 	.if CARRY?
-		xor [edi].sign, NEGATIVE ;change_sign
+		xor [edi].sign, NEGATIVE ;change sign
 	.endif
 
-	.if change_sign == 1
-		xor [edi].digits, NEGATIVE
-	.endif
+	;.if change_sign == 1
+	;	xor [edi].sign, NEGATIVE
+	;.endif
 	invoke bignum_shrink_to_fit, result
 	invoke bignum_zeronull_fix, result
 	invoke bignum_move, res, result
@@ -525,7 +526,7 @@ bignum_sub proc uses edi res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 	
 	mov edi, rhs
 	assume edi:ptr bignum
-	xor [edi].sign, NEGATIVE
+	xor [edi].sign, NEGATIVE ;change sign
 	invoke bignum_add, res, lhs, rhs
 	xor [edi].sign, NEGATIVE
 	ret

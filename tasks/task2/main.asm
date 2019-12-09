@@ -12,8 +12,8 @@ bignum_shl proto bn:ptr bignum, number:dword
 
 .data
 
-number1 db "FFFFFFFFFFFFFFFF", 0
-number2 db "-FFFFFFFFFFFFFFFF", 0
+number1 db "-FFFFFFFFFFFFFFFF", 0
+number2 db "FFFFFFFFFFFFABCD", 0
 
 .code
 
@@ -31,11 +31,19 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke bignum_init_null, addr rhs
 
 	invoke bignum_set_str, lhs, offset number1
+	.if eax != 0
+		invoke crt_printf, $CTA0("Error: lhs initialization")
+		ret
+	.endif
 	invoke crt_printf, $CTA0("lhs = ")
 	invoke bignum_printf, lhs
 	invoke crt_printf, $CTA0("\n")
 
 	invoke bignum_set_str, rhs, offset number2
+	.if eax != 0
+		invoke crt_printf, $CTA0("Error: rhs initialization")
+		ret
+	.endif
 	invoke crt_printf, $CTA0("rhs = ")
 	invoke bignum_printf, rhs
 	invoke crt_printf, $CTA0("\n")
