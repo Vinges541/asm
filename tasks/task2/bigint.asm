@@ -68,11 +68,13 @@ my_strtoul proc uses esi start_str:ptr byte, end_str:ptr byte
 	.while  esi >= start_str
 		xor eax, eax
 		mov  al, byte ptr [esi]
-		
 		.if eax >= '0' && eax <= '9'
 			sub eax, '0' 	
 		.elseif eax >= 'A' && eax <= 'F'
 			sub eax, 55 ;eax-='A'+10
+		.elseif eax >= 'a' && eax <= 'f'
+			sub eax, 'a'
+			add eax, 10
 		.endif
 		mul base
 		add num, eax
@@ -879,16 +881,6 @@ bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr big
 	xor eax, eax
 	ret
 bignum_mul endp
-
-;Деление двух больших чисел; res = lhs / rhs;
-bignum_div proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
-
-bignum_div endp
-
-;Остаток от деления двух больших чисел; res = lhs % rhs
-bignum_mod proc res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
-
-bignum_mod endp
 
 ;Копирование больших чисел; dst = src
 bignum_cpy proc uses edi esi ebx dst:ptr bignum, src:ptr bignum

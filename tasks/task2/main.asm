@@ -8,13 +8,6 @@ include c:\masm32\include\msvcrt.inc
 include Strings.mac
 include bigint.inc
 
-bignum_shl proto bn:ptr bignum, number:dword
-
-.data
-
-number1 db "14", 0
-number2 db "88", 0
-
 .code
 
 main proc argc:dword, argv:dword, envp:dword
@@ -23,14 +16,20 @@ main proc argc:dword, argv:dword, envp:dword
 	local lhs:ptr bignum
 	local rhs:ptr bignum
 	local num:dword
-	mov num, 0FFFFFFFFh
-	invoke crt_printf, $CTA0("num = %X\n"), num
-
+	.if argc < 4
+		invoke crt_printf, $CTA0("Usage: lhs rhs number(dword)")
+		mov eax, 2
+		ret
+	.endif
+	
 	invoke bignum_init_null, addr res
 	invoke bignum_init_null, addr lhs
 	invoke bignum_init_null, addr rhs
 
-	invoke bignum_set_str, lhs, offset number1
+	mov edx, argv
+	add edx, 4
+	push edx
+	invoke bignum_set_str, lhs, dword ptr [edx]
 	.if eax != 0
 		invoke crt_printf, $CTA0("Error: lhs initialization")
 		ret
@@ -39,7 +38,10 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke bignum_printf, lhs
 	invoke crt_printf, $CTA0("\n")
 
-	invoke bignum_set_str, rhs, offset number2
+	pop edx
+	add edx, 4
+	push edx
+	invoke bignum_set_str, rhs, dword ptr [edx]
 	.if eax != 0
 		invoke crt_printf, $CTA0("Error: rhs initialization")
 		ret
@@ -47,9 +49,21 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke crt_printf, $CTA0("rhs = ")
 	invoke bignum_printf, rhs
 	invoke crt_printf, $CTA0("\n")
-	
+
+	pop edx
+	add edx, 4
+	push edx
+	invoke crt_strtol, dword ptr [edx], NULL, 16
+	mov num, eax
+	invoke crt_printf, $CTA0("num = %X\n"), num
+
 	invoke bignum_add, res, lhs, rhs
 	invoke crt_printf, $CTA0("lhs + rhs = ")
+	invoke bignum_printf, res
+	invoke crt_printf, $CTA0("\n")
+
+	invoke bignum_sub, res, lhs, rhs
+	invoke crt_printf, $CTA0("lhs - rhs = ")
 	invoke bignum_printf, res
 	invoke crt_printf, $CTA0("\n")
 

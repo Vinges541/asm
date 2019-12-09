@@ -53,12 +53,6 @@ bignum_mul_ui proto res:ptr bignum, bn:ptr bignum, num:dword
 ;Умножение двух больших чисел; res = lhs * rhs
 bignum_mul proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
-;Деление двух больших чисел; res = lhs / rhs;
-bignum_div  proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
-
-;Остаток от деления двух больших чисел; res = lhs % rhs
-bignum_mod proto res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
-
 ;Копирование больших чисел; lhs = rhs
 bignum_cpy proto lhs:ptr bignum, rhs:ptr bignum
 
