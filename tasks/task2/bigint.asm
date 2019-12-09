@@ -199,10 +199,14 @@ bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 	
 	mov eax, [tmp]
 	mov [end_substr], eax
-	.if eax > [cstr] + 8
+	push esi
+	add esi, 8
+	.if eax > esi
 		sub eax, 8
+		pop esi
 	.else
-		mov eax, [cstr]
+		pop esi
+		mov eax, esi
 	.endif
 	mov [start_substr], eax
 	

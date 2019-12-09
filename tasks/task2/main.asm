@@ -12,8 +12,8 @@ bignum_shl proto bn:ptr bignum, number:dword
 
 .data
 
-number1 db "-FFFFFFFFFFFFFFFF", 0
-number2 db "FFFFFFFFFFFFABCD", 0
+number1 db "14", 0
+number2 db "88", 0
 
 .code
 
