@@ -518,6 +518,12 @@ bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 		inc ecx
 	.endw
 	popf
+	.while CARRY?
+		sbb dword ptr [eax], 0
+		pushf
+		add eax, sizeof(digit)
+		popf
+	.endw
 
 	.if CARRY?
 		xor [edi].sign, NEGATIVE ;change sign
@@ -880,8 +886,9 @@ bignum_shl endp
 bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	local inter_res:ptr bignum
+	local result:ptr bignum
 	invoke bignum_init_null, addr inter_res
-	invoke bignum_set_ui, res, 0
+	invoke bignum_init_null, addr result
 
 	mov eax, [rhs]
 	mov eax, [eax].bignum.digits
@@ -894,7 +901,7 @@ bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr big
 		pop rhs
 		pop lhs
 	.endif
-	mov eax, res
+	mov eax, result
 	mov ebx, lhs
 	mov ebx, [ebx].bignum.sign
 	mov [eax].bignum.sign, ebx
@@ -906,15 +913,16 @@ bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr big
 		mov esi, [esi].container
 		invoke bignum_mul_ui, inter_res, lhs, dword ptr [esi + ecx*4]
 		invoke bignum_shl, inter_res, ecx
-		invoke bignum_add, res, res, inter_res
+		invoke bignum_add, result, result, inter_res
 		pop esi
 		inc ecx
 	.endw
-	mov edi, res
+	mov edi, result
 	mov eax, rhs
 	mov eax, [eax].bignum.sign
 	xor [edi].bignum.sign, eax
 	invoke bignum_free, inter_res
+	invoke bignum_move, res, result
 	xor eax, eax
 	ret
 bignum_mul endp
@@ -1025,11 +1033,12 @@ bignum_free endp
 ;¬озведение большого числа в n-ную степень; res = lhs^exp
 bignum_pow proc uses ecx res:ptr bignum, lhs:ptr bignum, exp:dword
 
+	invoke bignum_cpy, res, lhs
+	dec exp
 	.while dword ptr [exp] > 0
 
 		invoke bignum_mul, res, res, lhs
 		dec exp
-
 	.endw
 	ret
 

@@ -55,7 +55,7 @@ main proc argc:dword, argv:dword, envp:dword
 	push edx
 	invoke crt_strtoul, dword ptr [edx], NULL, 16
 	mov num, eax
-	invoke crt_printf, $CTA0("num = %u\n"), num
+	invoke crt_printf, $CTA0("num = 0x%x\n"), num
 
 	invoke bignum_add, res, lhs, rhs
 	invoke crt_printf, $CTA0("lhs + rhs = ")
@@ -83,7 +83,7 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke crt_printf, $CTA0("\n")
 
 	invoke bignum_mul_ui, res, lhs, num
-	invoke crt_printf, $CTA0("lhs*num = ")
+	invoke crt_printf, $CTA0("lhs * num = ")
 	invoke bignum_printf, res
 	invoke crt_printf, $CTA0("\n")
 	
@@ -91,6 +91,11 @@ main proc argc:dword, argv:dword, envp:dword
 	invoke crt_printf, $CTA0("lhs * rhs = ")
 	invoke bignum_printf, res
 	invoke crt_printf, $CTA0("\n")
+
+	;invoke bignum_pow, res, lhs, num
+	;invoke crt_printf, $CTA0("lhs ** num = ")
+	;invoke bignum_printf, res
+	;invoke crt_printf, $CTA0("\n")
 
 	invoke bignum_free, lhs
 	invoke bignum_free, rhs
