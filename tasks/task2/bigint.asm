@@ -732,6 +732,10 @@ bignum_mul_ui proc uses edi ecx ebx res:ptr bignum, bn:ptr bignum, num:dword
 	mov dword ptr [total_res],0
 	mov dword ptr [total_res+4],0
 
+	.if num == 0
+		invoke bignum_set_ui, res, num
+		ret
+	.endif
 	invoke bignum_cpy, res, bn
 	mov edi, res
 	assume edi:ptr bignum
