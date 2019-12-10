@@ -21,7 +21,7 @@ bignum_printf proc uses esi ebx edx ecx bn:ptr bignum
 	.if [esi].sign != 0
 		invoke crt_printf, $CTA0("%c"), 45
 	.endif
-
+	invoke crt_printf, $CTA0("0x")
 	.if [esi].container != 0
 
 		mov eax, [esi].digits
@@ -35,14 +35,14 @@ bignum_printf proc uses esi ebx edx ecx bn:ptr bignum
 		add ecx, eax
 		
 		pushad
-		invoke crt_printf, $CTA0("%X"), dword ptr [ecx]
+		invoke crt_printf, $CTA0("%x"), dword ptr [ecx]
 		popad
 		sub ecx, sizeof(dword);sizeof ptr digit
 
 		.while	ecx >= edx
 
 			pushad
-			invoke crt_printf, $CTA0("%08X"), dword ptr [ecx]
+			invoke crt_printf, $CTA0("%08x"), dword ptr [ecx]
 			popad
 			sub ecx, sizeof(dword)
 
@@ -230,10 +230,14 @@ bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 		
 		sub [end_substr], 8
 		mov eax, [start_substr]
-		.if eax > [cstr] + 8
+		push esi
+		add esi, 8
+		.if eax > esi
+			pop esi
 			sub [start_substr], 8
 		.else
-			mov eax, [cstr]
+			pop esi
+			mov eax, esi
 			mov [start_substr], eax
 		.endif
 		
@@ -243,6 +247,7 @@ bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 		
 		inc [i]
 	.endw
+	invoke bignum_zeronull_fix, bn
 	xor eax, eax
 	ret
 bignum_set_str endp
