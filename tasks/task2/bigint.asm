@@ -568,8 +568,10 @@ bignum_xor proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	.else 
 
 		invoke bignum_cpy, res, rhs
-		mov eax, lhs
-		mov rhs, eax
+		push lhs
+		push rhs
+		pop lhs
+		pop rhs
 
 	.endif
 
@@ -633,8 +635,10 @@ bignum_or proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr 
 	.else 
 
 		invoke bignum_cpy, res, rhs
-		mov eax, lhs
-		mov rhs, eax
+		push lhs
+		push rhs
+		pop lhs
+		pop rhs
 
 	.endif
 
@@ -695,8 +699,10 @@ bignum_and proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	.else 
 
 		invoke bignum_cpy, res, rhs
-		mov eax, lhs
-		mov rhs, eax
+		push lhs
+		push rhs
+		pop lhs
+		pop rhs
 
 	.endif
 

@@ -53,7 +53,7 @@ main proc argc:dword, argv:dword, envp:dword
 	pop edx
 	add edx, 4
 	push edx
-	invoke crt_strtol, dword ptr [edx], NULL, 16
+	invoke crt_strtoul, dword ptr [edx], NULL, 16
 	mov num, eax
 	invoke crt_printf, $CTA0("num = %u\n"), num
 
