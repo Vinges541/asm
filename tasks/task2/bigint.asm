@@ -459,8 +459,12 @@ bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 		inc ecx
 	.endw
 	popf
+	.while CARRY?
 	adc dword ptr [eax], 0
-
+	pushf
+	add eax, sizeof(digit)
+	popf
+	.endw
 	invoke bignum_shrink_to_fit, res
 	invoke bignum_zeronull_fix, res
 
@@ -505,9 +509,9 @@ bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 		mov ebx, dword ptr [edx]
 		popf
 		sbb dword ptr [eax], ebx
-		.if CARRY?
-			neg dword ptr [eax]
-		.endif
+		;.if CARRY?
+			;neg dword ptr [eax]
+		;.endif
 		pushf
 		add edx, sizeof(digit)
 		add eax, sizeof(digit)
@@ -576,18 +580,26 @@ bignum_xor proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	assume esi:ptr bignum
 
 	mov ecx, 0
-	.while ecx < [esi].digits
+	.while ecx < [edi].digits
+		
 		mov eax, ecx
 		mov ebx, sizeof(digit)
 		mul ebx
 		
-		mov ebx, [esi].container
-		add ebx, eax
+		.if	ecx < [esi].digits
+			mov ebx, [esi].container
+			add ebx, eax
+			mov ebx, dword ptr [ebx]
+		.else
+			mov ebx, 0
+		.endif
+		
 		mov edx, [edi].container
 		add edx, eax
-		mov ebx, dword ptr [ebx]
+		
 		xor dword ptr[edx], ebx
 		inc ecx
+		
 	.endw
 
 	mov eax,  [esi].sign
@@ -633,16 +645,21 @@ bignum_or proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr 
 	assume esi:ptr bignum
 
 	mov ecx, 0
-	.while ecx < [esi].digits
+	.while ecx < [edi].digits
 		mov eax, ecx
 		mov ebx, sizeof(digit)
 		mul ebx
 		
-		mov ebx, [esi].container
-		add ebx, eax
+		.if	ecx < [esi].digits
+			mov ebx, [esi].container
+			add ebx, eax
+			mov ebx, dword ptr [ebx]
+		.else
+			mov ebx, 0
+		.endif
+		
 		mov edx, [edi].container
 		add edx, eax
-		mov ebx, dword ptr [ebx]
 		or dword ptr[edx], ebx
 		inc ecx
 	.endw
@@ -690,16 +707,21 @@ bignum_and proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	assume esi:ptr bignum
 
 	mov ecx, 0
-	.while ecx < [esi].digits
+	.while ecx < [edi].digits
 		mov eax, ecx
 		mov ebx, sizeof(digit)
 		mul ebx
 		
-		mov ebx, [esi].container
-		add ebx, eax
+		.if	ecx < [esi].digits
+			mov ebx, [esi].container
+			add ebx, eax
+			mov ebx, dword ptr [ebx]
+		.else
+			mov ebx, 0
+		.endif
+		
 		mov edx, [edi].container
 		add edx, eax
-		mov ebx, dword ptr [ebx]
 		and dword ptr[edx], ebx
 		inc ecx
 	.endw
