@@ -1,0 +1,17 @@
+В каталоге \\dc1\doc\Matkin\asm\3 курс\books\arm
+ARM Architecture Reference Manual.pdf
+stm32.pdf
+Knaggs Welsh - ARM assembly language programming.pdf
+Procedure Call Standard for the ARM Architecture.pdf
+Runtime ABI for ARM.pdf
+
+\\dc1\doc\books\computing\security\binary\ReverseEngineering\RE_for_Beginners-ru (10.10.2015).pdf
+
+https://balau82.wordpress.com/2010/08/17/debugging-arm-programs-inside-qemu/
+https://balau82.wordpress.com/2010/03/22/compiling-linux-kernel-for-qemu-arm-emulator/
+
+https://habrahabr.ru/post/133808/
+https://habrahabr.ru/post/188712/
+http://marsohod.org/index.php/prodmarsohod2/amber-arm-soc/226-arm-instr
+http://www.gaw.ru/html.cgi/txt/doc/micros/arm/index.htm
+

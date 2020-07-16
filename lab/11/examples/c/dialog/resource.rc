@@ -1,0 +1,38 @@
+#include <windows.h>
+#include "resource.h"
+
+
+MainIcon    ICON    "icon.ico"
+
+
+MainMenu    MENU {
+	POPUP "&Ё"
+		{
+		MENUITEM "Диалог &1\tCtrl+F1", IDM_1
+        MENUITEM "Диалог &2\tCtrl+F2", IDM_2
+        MENUITEM "Диалог &3\tCtrl+F3", IDM_3
+		}
+	}
+
+Accel   ACCELERATORS {
+	VK_F1, IDM_1, VIRTKEY, CONTROL
+    VK_F2, IDM_2, VIRTKEY, CONTROL
+    VK_F3, IDM_3, VIRTKEY, CONTROL
+}
+
+
+DlgBox1 DIALOG 10, 10, 150, 100
+STYLE WS_POPUP | WS_DLGFRAME //| WS_OVERLAPPEDWINDOW
+{
+	CTEXT "Диалоговое окно 1", -1, 10, 20, 80, 10
+	CONTROL "OK", IDB_OK, "button", WS_CHILD | WS_VISIBLE, 80, 50, 40, 20
+}
+
+DlgBox2 DIALOG 10, 10, 150, 100
+STYLE WS_POPUP | WS_DLGFRAME | WS_OVERLAPPEDWINDOW
+{
+	
+}
+
+
+IDS_1 SOUND "fan.wav"

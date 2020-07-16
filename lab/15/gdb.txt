@@ -1,0 +1,38 @@
+Файл конфигурации .gdbinit следует поместить в домашний каталог пользователя.
+
+Указание отлаживаемой программы
+# gdb filename
+gdb$ file filename
+
+Запуск программы с аргументами
+gdb$ r arg1, arg2, ...
+
+Установить точку останова
+gdb$ b main
+gdb$ b *main + 12
+gdb$ b *0x00001234
+
+Список точек останова
+gdb$ bpl
+gdb$ info breakpoints
+
+Удаление точек останова
+gdb$ delete breakpoints
+gdb$ delete breakpoints index
+
+Просмотреть список функций
+gdb$ func
+
+Посмотреть память по адресу
+gdb$ dd addr
+gdb$ dd $pc
+gdb$ x/10xb $pc
+
+Шаг без захода
+gdb$ nexti
+
+Шаг с заходом
+gdb$ stepi
+
+Продолжить исполнение
+gdb$ c

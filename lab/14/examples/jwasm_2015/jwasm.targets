@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)\$(MSBuildThisFileName).xml" />
+      <AvailableItemName Include="JWASM">
+        <Targets>_JWASM</Targets>
+      </AvailableItemName>
+  </ItemGroup>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+      $(ComputeLinkInputsTargets);
+      ComputeJWASMOutput;
+    </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+      $(ComputeLibInputsTargets);
+      ComputeJWASMOutput;
+    </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <UsingTask
+    TaskName="JWASM"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)\$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_JWASM"
+    BeforeTargets="$(JWASMBeforeTargets)"
+    AfterTargets="$(JWASMAfterTargets)"
+    Condition="'@(JWASM)' != ''"
+    Outputs="%(JWASM.ObjectFileName)"
+    Inputs="%(JWASM.Identity);%(JWASM.AdditionalDependencies);$(MSBuildProjectFile)"
+    DependsOnTargets="_SelectedFiles">
+    <ItemGroup Condition="'@(SelectedFiles)' != ''">
+      <JWASM Remove="@(JWASM)" Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <JWASM_tlog Include="%(JWASM.ObjectFileName)" Condition="'%(JWASM.ObjectFileName)' != '' and '%(JWASM.ExcludedFromBuild)' != 'true'">
+        <Source>@(JWASM, '|')</Source>
+      </JWASM_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(JWASM.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(JWASM_tlog)' != '' and '%(JWASM_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(JWASM_tlog.Source);@(JWASM_tlog-&gt;'%(Fullpath)')"/>
+    <JWASM
+      Condition="'@(JWASM)' != '' and '%(JWASM.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(JWASM.CommandLineTemplate)"
+      NoLogo="%(JWASM.NoLogo)"
+      GeneratePreprocessedSourceListing="%(JWASM.GeneratePreprocessedSourceListing)"
+      ListAllAvailableInformation="%(JWASM.ListAllAvailableInformation)"
+      UseSafeExceptionHandlers="%(JWASM.UseSafeExceptionHandlers)"
+      AddFirstPassListing="%(JWASM.AddFirstPassListing)"
+      EnableAssemblyGeneratedCodeListing="%(JWASM.EnableAssemblyGeneratedCodeListing)"
+      DisableSymbolTable="%(JWASM.DisableSymbolTable)"
+      EnableFalseConditionalsInListing="%(JWASM.EnableFalseConditionalsInListing)"
+      TreatWarningsAsErrors="%(JWASM.TreatWarningsAsErrors)"
+      MakeAllSymbolsPublic="%(JWASM.MakeAllSymbolsPublic)"
+      MASMCodeGen="%(JWASM.MASMCodeGen)"      
+      GenerateDebugInformation="%(JWASM.GenerateDebugInformation)"
+      EnableMASM51Compatibility="%(JWASM.EnableMASM51Compatibility)"
+      StrictMASMCompatibility="%(JWASM.StrictMASMCompatibility)"      
+      PerformSyntaxCheckOnly="%(JWASM.PerformSyntaxCheckOnly)"
+      ObjectFileName="%(JWASM.ObjectFileName)"
+      PreprocessorDefinitions="%(JWASM.PreprocessorDefinitions)"
+      AssembledCodeListingFile="%(JWASM.AssembledCodeListingFile)"
+      IncludePaths="%(JWASM.IncludePaths)"
+      ForceInclude="%(JWASM.ForceInclude)"
+      PreserveIdentifierCase="%(JWASM.PreserveIdentifierCase)"
+      CNamesDecoration="%(JWASM.CNamesDecoration)"      
+      StdcallSymbolDecoration="%(JWASM.StdcallSymbolDecoration)"      
+      WarningLevel="%(JWASM.WarningLevel)"
+      OutputFormat="%(JWASM.OutputFormat)"      
+      PackAlignmentBoundary="%(JWASM.PackAlignmentBoundary)"
+      CallingConvention="%(JWASM.CallingConvention)"
+      AdditionalOptions="%(JWASM.AdditionalOptions)"
+      Inputs="%(JWASM.Identity)" />
+  </Target>
+  <Target
+    Name="ComputeJWASMOutput"
+    Condition="'@(JWASM)' != ''">
+    <ItemGroup>
+      <Link Include="@(JWASM->Metadata('ObjectFileName')->Distinct()->ClearMetadata())" Condition="'%(JWASM.ExcludedFromBuild)' != 'true'"/>
+      <Lib Include="@(JWASM->Metadata('ObjectFileName')->Distinct()->ClearMetadata())" Condition="'%(JWASM.ExcludedFromBuild)' != 'true'"/>
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,34 @@
+#include <windows.h>
+#include "resource.h"
+
+
+MainIcon    ICON    "icon.ico"
+
+
+MainMenu    MENU {
+    MENUITEM "&Ё", IDM_1
+	POPUP "&Подменю 2"
+		{
+		MENUITEM "Пункт 2.&1\tCtrl+s", IDM_21
+		MENUITEM "Пункт 2.&2\tCtrl+u", IDM_22
+		MENUITEM SEPARATOR
+		MENUITEM "Пункт 2.&3",         IDM_23
+		}
+	POPUP "&Подменю 3"
+		{
+		MENUITEM "Пункт 3.1\tShift+e", IDM_31
+		MENUITEM "Пункт 3.2\tAlt+a", IDM_32
+		}
+	}
+
+
+
+Accel   ACCELERATORS {
+	"^s", IDM_21
+	"^u", IDM_22
+	VK_F1, IDM_1, VIRTKEY, CONTROL
+
+	"E", IDM_31
+	"a", IDM_32, ALT
+
+}

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(JWASMBeforeTargets)' == '' and '$(JWASMAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <JWASMBeforeTargets>Midl</JWASMBeforeTargets>
+    <JWASMAfterTargets>CustomBuild</JWASMAfterTargets>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <JWASM>
+      <NoLogo>true</NoLogo>
+      <OutputFormat>1</OutputFormat>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ObjectFileName>$(IntDir)%(FileName).obj</ObjectFileName>
+      <PreserveIdentifierCase>0</PreserveIdentifierCase>
+      <WarningLevel>2</WarningLevel>
+      <PackAlignmentBoundary>0</PackAlignmentBoundary>
+      <CallingConvention>0</CallingConvention>
+      <CommandLineTemplate Condition="'$(Platform)' == 'Win32'">jwasm.exe /c [AllOptions] [AdditionalOptions] [inputs]</CommandLineTemplate>
+      <CommandLineTemplate Condition="'$(Platform)' == 'X64'">jwasm.exe /c -win64 -Zp8 [AllOptions] [AdditionalOptions] [inputs]</CommandLineTemplate>
+      <CommandLineTemplate Condition="'$(Platform)' != 'Win32' and '$(Platform)' != 'X64'">echo JWASM not supported on this platform</CommandLineTemplate>
+      <ExecutionDescription>Assembling [Inputs]...</ExecutionDescription>
+    </JWASM>
+  </ItemDefinitionGroup>
+</Project>

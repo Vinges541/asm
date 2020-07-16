@@ -1,0 +1,13 @@
+
+MainIcon                ICON    DISCARDABLE     "icon.ico"
+
+Pawn                    BITMAP  DISCARDABLE		"img\p.bmp"
+Castle                  BITMAP  DISCARDABLE		"img\l.bmp"
+Bishop                  BITMAP  DISCARDABLE		"img\s.bmp"
+Knight                  BITMAP  DISCARDABLE     "img\k.bmp"
+Queen                   BITMAP  DISCARDABLE     "img\f.bmp"
+King                    BITMAP  DISCARDABLE     "img\kr.bmp"
+Fig                     BITMAP  DISCARDABLE     "img\fig2.bmp"
+Fig2                    BITMAP  DISCARDABLE     "img\fig3.bmp"
+
+

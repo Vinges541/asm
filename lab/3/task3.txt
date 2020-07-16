@@ -1,0 +1,14 @@
+Задание.
+
+Реализовать на языке ассемблера стандартные функции работы со строками:
+char * strstr (const char *str, const char *strSearch);
+char * strcpy (char *dst, const char *src);
+unsigned int strlen (const char *str);
+char * strcat (char *dst, const char *src);
+int strcmp (const char *string1, const char *string2);
+char * strchr (const char *str, int c);
+
+Функции должны придерживаться соглашения cdecl.
+Для тестирования написать программу, вызывающую функции с аргументами из командной строки.
+
+2 балла.

@@ -1,0 +1,32 @@
+#include <windows.h>
+
+
+#define IDM_OPEN    201
+#define IDM_OPEN2   202
+#define IDM_SAVE    203
+#define IDM_INVERT  204
+#define IDM_GRAYSTYLE   205
+
+
+MainIcon    ICON    "icon.ico"
+
+Bitmap1     BITMAP  "bitmap.bmp"
+
+
+MainMenu    MENU {
+	POPUP "&Ё"
+		{
+		MENUITEM "&Открыть\tCtrl+o", IDM_OPEN
+        MENUITEM "Открыть из &ресурсов", IDM_OPEN2
+        MENUITEM "&Сохранить\tCtrl+s", IDM_SAVE
+        MENUITEM "&Преобразовать\tCtrl+i", IDM_INVERT
+        MENUITEM "&Оттенки серого\tCtrl+g", IDM_GRAYSTYLE
+		}
+	}
+
+Accel   ACCELERATORS {
+	"^o", IDM_OPEN
+    "^s", IDM_SAVE
+    "^i", IDM_INVERT
+    "^g", IDM_GRAYSTYLE
+}

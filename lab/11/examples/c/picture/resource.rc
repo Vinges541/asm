@@ -1,0 +1,26 @@
+#include <windows.h>
+#include "resource.h"
+
+
+MainIcon    ICON    "icon.ico"
+
+Bitmap1     BITMAP  "bitmap.bmp"
+
+
+MainMenu    MENU {
+	POPUP "&Ё"
+		{
+		MENUITEM "&Открыть\tCtrl+o", IDM_OPEN
+        MENUITEM "Открыть из &ресурсов", IDM_OPEN2
+        MENUITEM "&Сохранить\tCtrl+s", IDM_SAVE
+        MENUITEM "&Преобразовать\tCtrl+i", IDM_INVERT
+        MENUITEM "&Оттенки серого\tCtrl+g", IDM_GRAYSTYLE
+		}
+	}
+
+Accel   ACCELERATORS {
+	"^o", IDM_OPEN
+    "^s", IDM_SAVE
+    "^i", IDM_INVERT
+    "^g", IDM_GRAYSTYLE
+}

@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="JWASM">
+      <Targets>_JWASM</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="JWASM"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_JWASM"
+    BeforeTargets="$(JWASMBeforeTargets)"
+    AfterTargets="$(JWASMAfterTargets)"
+    Condition="'@(JWASM)' != ''"
+    DependsOnTargets="$(JWASMDependsOn);ComputeJWASMOutput"
+    Outputs="@(JWASM-&gt;Metadata('Outputs')-&gt;Distinct())"
+    Inputs="@(JWASM);%(JWASM.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <JWASM
+        Remove="@(JWASM)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <JWASM_tlog
+        Include="%(JWASM.Outputs)"
+        Condition="'%(JWASM.Outputs)' != '' and '%(JWASM.ExcludedFromBuild)' != 'true'">
+        <Source>@(JWASM, '|')</Source>
+      </JWASM_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(JWASM.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(JWASM_tlog)' != '' and '%(JWASM_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)$(ProjectName).write.1u.tlog"
+      Lines="^%(JWASM_tlog.Source);@(JWASM_tlog-&gt;'%(Fullpath)')"
+      Encoding="Unicode" />
+    <JWASM
+      Condition="'@(JWASM)' != '' and '%(JWASM.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(JWASM.CommandLineTemplate)"
+      NoLogo="%(JWASM.NoLogo)"
+      GeneratePreprocessedSourceListing="%(JWASM.GeneratePreprocessedSourceListing)"
+      ListAllAvailableInformation="%(JWASM.ListAllAvailableInformation)"
+      UseSafeExceptionHandlers="%(JWASM.UseSafeExceptionHandlers)"
+      EnableAssemblyGeneratedCodeListing="%(JWASM.EnableAssemblyGeneratedCodeListing)"
+      DisableSymbolTable="%(JWASM.DisableSymbolTable)"
+      EnableFalseConditionalsInListing="%(JWASM.EnableFalseConditionalsInListing)"
+      TreatWarningsAsErrors="%(JWASM.TreatWarningsAsErrors)"
+      MakeAllSymbolsPublic="%(JWASM.MakeAllSymbolsPublic)"
+      GenerateDebugInformation="%(JWASM.GenerateDebugInformation)"
+      EnableMASM51Compatibility="%(JWASM.EnableMASM51Compatibility)"
+      StrictMASMCompatibility="%(JWASM.StrictMASMCompatibility)"
+      MASMCodeGen="%(JWASM.MASMCodeGen)"
+      PerformSyntaxCheckOnly="%(JWASM.PerformSyntaxCheckOnly)"
+      ObjectFileName="%(JWASM.ObjectFileName)"
+      PreprocessorDefinitions="%(JWASM.PreprocessorDefinitions)"
+      AssembledCodeListingFile="%(JWASM.AssembledCodeListingFile)"
+      IncludePaths="%(JWASM.IncludePaths)"
+      ForceInclude="%(JWASM.ForceInclude)"
+      PreserveIdentifierCase="%(JWASM.PreserveIdentifierCase)"
+      WarningLevel="%(JWASM.WarningLevel)"
+      OutputFormat="%(JWASM.OutputFormat)"
+      PackAlignmentBoundary="%(JWASM.PackAlignmentBoundary)"
+      CallingConvention="%(JWASM.CallingConvention)"
+      AdditionalOptions="%(JWASM.AdditionalOptions)"
+      Inputs="@(JWASM)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeJWASMOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeJWASMOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeJWASMOutput"
+    Condition="'@(JWASM)' != ''">
+    <ItemGroup>
+      <JWASMDirsToMake
+        Condition="'@(JWASM)' != '' and '%(JWASM.ExcludedFromBuild)' != 'true'"
+        Include="%(JWASM.Outputs)" />
+      <Link
+        Include="%(JWASMDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(JWASMDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(JWASMDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(JWASMDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

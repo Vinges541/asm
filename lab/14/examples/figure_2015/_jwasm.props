@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(JWASMBeforeTargets)' == '' and '$(JWASMAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <JWASMBeforeTargets>Midl</JWASMBeforeTargets>
+    <JWASMAfterTargets>CustomBuild</JWASMAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <JWASMDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(JWASMDependsOn)</JWASMDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <JWASM>
+      <NoLogo>true</NoLogo>
+      <GeneratePreprocessedSourceListing>False</GeneratePreprocessedSourceListing>
+      <ListAllAvailableInformation>False</ListAllAvailableInformation>
+      <UseSafeExceptionHandlers>False</UseSafeExceptionHandlers>
+      <EnableAssemblyGeneratedCodeListing>False</EnableAssemblyGeneratedCodeListing>
+      <DisableSymbolTable>False</DisableSymbolTable>
+      <EnableFalseConditionalsInListing>False</EnableFalseConditionalsInListing>
+      <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+      <MakeAllSymbolsPublic>False</MakeAllSymbolsPublic>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableMASM51Compatibility>False</EnableMASM51Compatibility>
+      <StrictMASMCompatibility>False</StrictMASMCompatibility>
+      <MASMCodeGen>False</MASMCodeGen>
+      <PerformSyntaxCheckOnly>False</PerformSyntaxCheckOnly>
+      <ObjectFileName>$(IntDir)%(Filename).obj</ObjectFileName>
+      <PreserveIdentifierCase>0</PreserveIdentifierCase>
+      <WarningLevel>2</WarningLevel>
+      <OutputFormat>1</OutputFormat>
+      <PackAlignmentBoundary>0</PackAlignmentBoundary>
+      <CallingConvention>0</CallingConvention>
+      <CommandLineTemplate>jwasm.exe /c [AllOptions] [AdditionalOptions] [inputs]</CommandLineTemplate>
+      <Outputs>%(ObjectFileName)</Outputs>
+      <ExecutionDescription>Assembling...</ExecutionDescription>
+    </JWASM>
+  </ItemDefinitionGroup>
+</Project>
