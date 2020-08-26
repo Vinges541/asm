@@ -70,7 +70,7 @@ BT_7 equ 210     ; идентификатор кнопки
 BT_8 equ 211     ; идентификатор кнопки
 BT_9 equ 212     ; идентификатор кнопки
 BT_10 equ 213     ; идентификатор кнопки
-BT_11 equ 214     ; идентификатор кнопки
+;BT_11 equ 214     ; идентификатор кнопки
 BT_12 equ 215     ; идентификатор кнопки
 
 LINE_ID		equ 100
@@ -93,7 +93,7 @@ FO2 equ 115
 
 ED_5	equ 240     ; идентификатор текстового поля ввода функции
 ED_6	equ 241
-ED_7	equ 242
+;ED_7	equ 242
 ED_8	equ 243
 
 ;----------------------------------------
@@ -316,13 +316,6 @@ CreateMainWindow endp
 ;--------------------
 ;Создание управляющих элементов (контролов) главного окна
 CreateControlWindowsMain proc  hwnd:HWND
-	COMMENT @
-	hButton1 = CreateWindow("button", "button1",
-                            WS_CHILD | WS_VISIBLE,
-                            10, 0,
-                            100, 30,
-                            hwnd, (HMENU)BT_1, hIns, NULL);
-	@
 	
 	invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = x^2"), WS_CHILD or WS_VISIBLE , 680, 90, 100, 26, hwnd, BT_1, hIns, NULL
     mov [hButton1], rax 
@@ -354,10 +347,10 @@ CreateControlWindowsMain proc  hwnd:HWND
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = log2x"), WS_CHILD or WS_VISIBLE , 800, 250, 100, 26, hwnd, BT_10, hIns, NULL
     mov [hButton10], rax
     
-    
-     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("Нарисовать"), WS_CHILD or WS_VISIBLE , 800, 365, 100, 27, hwnd, BT_11, hIns, NULL
+    COMMENT @
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("Нарисовать"), WS_CHILD or WS_VISIBLE , 800, 365, 100, 27, hwnd, BT_11, hIns, NULL
     mov [hButton11], rax
-   
+	@
     
     ;поля интервала
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 720, 40, 60, 20, hwnd, ED_5 , hIns, NULL
@@ -365,10 +358,12 @@ CreateControlWindowsMain proc  hwnd:HWND
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 840, 40, 60, 20, hwnd, ED_6 , hIns, NULL
 	mov hEdit2, rax
 	
+	COMMENT @
 	;поле ввода функции-полинома
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 680, 320, 220, 30, hwnd, ED_7 , hIns, NULL
 	mov hEdit3, rax
-	
+	@
+
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_LEFT or ES_READONLY, 680, 610, 220, 30, hwnd, ED_8 , hIns, NULL
 	mov hEdit4, rax
            
@@ -1711,6 +1706,8 @@ GetInterval proc field_ptr:ptr FieldState
 	ret
 GetInterval endp
 
+
+COMMENT @
 GetPolynom proc field_ptr:ptr FieldState
 	local string:qword
 	local stringlen:dword
@@ -1900,6 +1897,7 @@ GetPolynom proc field_ptr:ptr FieldState
 	invoke free, string	
 	ret
 GetPolynom endp
+@
 
 GetIntSum proc frame field_ptr:ptr FieldState
 	local string:qword
@@ -2076,11 +2074,13 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
+		COMMENT @
 		.elseif eax == BT_11	
 			invoke GetInterval, addr Field
 			invoke GetPolynom, addr Field
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
+		@
 		.endif
         ret
         
@@ -2116,7 +2116,7 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
         invoke TextOut, [hdc], 680, 45, $CTA0("A:"), 2
 		invoke TextOut, [hdc], 800, 45, $CTA0("B:"), 2
 		invoke TextOut, [hdc], 680, 65, $CTA0("Выберите функцию...:"), 20
-		invoke TextOut, [hdc], 680, 300, $CTA0("Или введите многочлен:"), 25
+		; invoke TextOut, [hdc], 680, 300, $CTA0("Или введите многочлен:"), 25
 		invoke TextOut, [hdc], 680, 580, $CTA0("Значение интеграла:"), 19
         ;lea rax, Field
 		invoke DrawFunctionByPixel, [hdc], addr Field
