@@ -8,29 +8,7 @@ include windows.inc
 include stdio.inc
 include string.inc
 include stdlib.inc
-
-
 include Strings.mac
-
-;----------------------------------------
-
-CStr macro y:req
-local sym
-	.const
-sym db y,0
-	.code
-	exitm <offset sym>
-endm
-
-CStrn macro y:req
-local sym
-	.const
-sym db y, 13, 10, 0
-	.code
-	exitm <offset sym>
-endm
-
-;----------------------------------------
 
 FieldState struct 
 	xStart			dword ?		;начало координат по иксу
@@ -55,23 +33,17 @@ FieldState ends
 ; строковая константа с именем окна
 AppWindowName equ <"Graphics">
 
+BT_SQ equ 204
+BT_CUBE equ 205
+BT_HYP equ 206
+BT_SIN equ 207
+BT_COS equ 208
+BT_TG equ 209
+BT_CTG equ 210
+BT_LN equ 211
+BT_LG equ 212
+BT_LOG2 equ 213     
 
-
-ED_1 equ 201     ; идентификатор верхнего текстового поля
-ED_2 equ 202     ; идентификатор нижнего текстового поля
-ST_1 equ 203     ; идентификатор статического окна
-BT_1 equ 204     ; идентификатор кнопки
-BT_2 equ 205     ; идентификатор кнопки
-BT_3 equ 206     ; идентификатор кнопки
-BT_4 equ 207     ; идентификатор кнопки
-BT_5 equ 208     ; идентификатор кнопки
-BT_6 equ 209     ; идентификатор кнопки
-BT_7 equ 210     ; идентификатор кнопки
-BT_8 equ 211     ; идентификатор кнопки
-BT_9 equ 212     ; идентификатор кнопки
-BT_10 equ 213     ; идентификатор кнопки
-
-LINE_ID		equ 100
 SQX_ID		equ 101
 CUBE_ID		equ	102
 HYP_ID		equ 103
@@ -84,12 +56,9 @@ LG_ID		equ 109
 LOG2_ID		equ 110
 EMPTY_ID	equ 113
 
-FO1 equ 114	;константы для for_ordinate
-FO2 equ 115
-
-ED_5	equ 240     ; идентификатор текстового поля ввода функции
-ED_6	equ 241
-ED_8	equ 243
+ED_INT_A	equ 240     ; идентификатор текстового поля ввода функции
+ED_INT_B	equ 241
+ED_INT_SUM	equ 243
 
 ;----------------------------------------
 ; объявление функций
@@ -103,8 +72,6 @@ DrawLine proto hdc:HDC, startX:dword, startY:dword, endX:dword, endY:dword
 DrawAbscissa proto hdc:HDC, field_ptr:ptr FieldState
 
 DrawOrdinate proto hdc:HDC, field_ptr:ptr FieldState
-
-DrawFunctionXdegree proto hdc:HDC, field_ptr:ptr FieldState
 
 DrawFunctionByPixel proto hdc:HDC, field_ptr:ptr FieldState
 
@@ -155,16 +122,16 @@ thousand dq 1000.0
 Field FieldState <0,0,0,0,0,0>
 
 .data?
-hButton1 HWND  ?
-hButton2 HWND  ?
-hButton3 HWND  ?
-hButton4 HWND  ?
-hButton5 HWND  ?
-hButton6 HWND  ?
-hButton7 HWND  ?
-hButton8 HWND  ?
-hButton9 HWND  ?
-hButton10 HWND  ?
+hButtonSQ HWND  ?
+hButtonCUBEX HWND  ?
+hButtonHYP HWND  ?
+hButtonSIN HWND  ?
+hButtonCOS HWND  ?
+hButtonTG HWND  ?
+hButtonCTG HWND  ?
+hButtonLN HWND  ?
+hButtonLG HWND  ?
+hButtonLOG2 HWND  ?
 
 globalf dq ?
 
@@ -173,9 +140,9 @@ glChar dq ?
 hIns HINSTANCE ?
 
 HwndMainWindow HWND ?
-hEdit1			HWND ?	;handle дочернего окна(поля ввода интервала)
-hEdit2			HWND ?
-hEdit4			HWND ?
+hEditIntA			HWND ?
+hEditIntB			HWND ?
+hEditIntSum			HWND ?
 
 .const
 
@@ -292,44 +259,43 @@ CreateMainWindow endp
 ;Создание управляющих элементов (контролов) главного окна
 CreateControlWindowsMain proc  hwnd:HWND
 	
-	invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = x^2"), WS_CHILD or WS_VISIBLE , 680, 90, 100, 26, hwnd, BT_1, hIns, NULL
-    mov [hButton1], rax 
+	invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = x^2"), WS_CHILD or WS_VISIBLE , 680, 90, 100, 26, hwnd, BT_SQ, hIns, NULL
+    mov [hButtonSQ], rax 
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = x^3"), WS_CHILD or WS_VISIBLE , 800, 90, 100, 26, hwnd, BT_2, hIns, NULL
-    mov [hButton2], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = x^3"), WS_CHILD or WS_VISIBLE , 800, 90, 100, 26, hwnd, BT_CUBE, hIns, NULL
+    mov [hButtonCUBEX], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = 1/x"), WS_CHILD or WS_VISIBLE , 680, 130, 100, 26, hwnd, BT_3, hIns, NULL
-    mov [hButton3], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = 1/x"), WS_CHILD or WS_VISIBLE , 680, 130, 100, 26, hwnd, BT_HYP, hIns, NULL
+    mov [hButtonHYP], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = sin(x)"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_4, hIns, NULL
-    mov [hButton4], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = sin(x)"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_SIN, hIns, NULL
+    mov [hButtonSIN], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = cos(x)"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_5, hIns, NULL
-    mov [hButton5], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = cos(x)"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_COS, hIns, NULL
+    mov [hButtonCOS], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = tg(x)"), WS_CHILD or WS_VISIBLE , 800, 170, 100, 26, hwnd, BT_6, hIns, NULL
-    mov [hButton6], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = tg(x)"), WS_CHILD or WS_VISIBLE , 800, 170, 100, 26, hwnd, BT_TG, hIns, NULL
+    mov [hButtonTG], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ctg(x)"), WS_CHILD or WS_VISIBLE , 680, 210, 100, 26, hwnd, BT_7, hIns, NULL
-    mov [hButton7], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ctg(x)"), WS_CHILD or WS_VISIBLE , 680, 210, 100, 26, hwnd, BT_CTG, hIns, NULL
+    mov [hButtonCTG], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ln(x)"), WS_CHILD or WS_VISIBLE , 800, 210, 100, 26, hwnd, BT_8, hIns, NULL
-    mov [hButton8], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ln(x)"), WS_CHILD or WS_VISIBLE , 800, 210, 100, 26, hwnd, BT_LN, hIns, NULL
+    mov [hButtonLN], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = lg(x)"), WS_CHILD or WS_VISIBLE , 680, 250, 100, 26, hwnd, BT_9, hIns, NULL
-    mov [hButton9], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = lg(x)"), WS_CHILD or WS_VISIBLE , 680, 250, 100, 26, hwnd, BT_LG, hIns, NULL
+    mov [hButtonLG], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = log_2(x)"), WS_CHILD or WS_VISIBLE , 800, 250, 100, 26, hwnd, BT_10, hIns, NULL
-    mov [hButton10], rax
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = log_2(x)"), WS_CHILD or WS_VISIBLE , 800, 250, 100, 26, hwnd, BT_LOG2, hIns, NULL
+    mov [hButtonLOG2], rax
     
-    ;поля интервала
-	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 720, 40, 60, 20, hwnd, ED_5 , hIns, NULL
-	mov hEdit1, rax
-	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 840, 40, 60, 20, hwnd, ED_6 , hIns, NULL
-	mov hEdit2, rax
+	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 720, 40, 60, 20, hwnd, ED_INT_A , hIns, NULL
+	mov hEditIntA, rax
+	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 840, 40, 60, 20, hwnd, ED_INT_B , hIns, NULL
+	mov hEditIntB, rax
 
-	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_LEFT or ES_READONLY, 680, 610, 220, 30, hwnd, ED_8 , hIns, NULL
-	mov hEdit4, rax
+	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_LEFT or ES_READONLY, 680, 610, 220, 30, hwnd, ED_INT_SUM , hIns, NULL
+	mov hEditIntSum, rax
            
 	ret
 CreateControlWindowsMain endp
@@ -424,171 +390,6 @@ DrawOrdinate proc frame hdc:HDC, field_ptr:ptr FieldState
   invoke DrawLine, [hdc], [startX], [startY], [startX], [endY]
     ret
 DrawOrdinate endp
-
-;--------------------
-;	Рисование функции
-DrawFunctionXdegree proc hdc:HDC, field_ptr:ptr FieldState
-	local i:qword
-
-	local _arg:qword
-	local resfun:qword
-	local startX:dword
-	local startY:dword
-	
-	local temp:dword
-	local temp1:dword
-	local count:dword
-
-	mov rsi, field_ptr
-	assume rsi:ptr FieldState
-	
-	
-	;перегружаем переменные из структуры в текущие: начало координат,число точек
-	mov r10d, [rsi].xStart		
-	mov [startX], r10d
-	mov r10d, [rsi].yStart
-	mov [startY], r10d
-	mov r10d, [rsi].count
-	mov [count], r10d	
-
-	mov [i] , 0.	
-	cycle:
-	
-		finit		
-		fld i			;загрузили i
-		fld oneth
-		fmul st, st(1) 
-		
-		fst [_arg]		;выгрузили полученное значение в аргумент
-		
-		lea rax, [rsi].function_ptr
-		assume rax:nothing
-
-		invoke (func ptr[rax]), [_arg]		;вызвали функцию
-		fst [resfun]			;выгрузили результат функции из стека в локальную переменную		
-	
-		fld [_arg]
-		fld [startX]
-		fadd st, st(1)
-		fistp [temp]			;результат сложения смещения и текущего значение в текущую переменную
-		
-		fld [startY]
-		fld [resfun]
-		fsubp st(1),st			; вычитание st(i) = st(i) - st(0)
-		fistp [temp1]			;результат вычитания из смещения текущего значения в текущую переменную1
-		
-		fld [startX]			;загружаем смещение
-		fistp [startX]			;запоминаем и извлекаем в целом формате
-		
-		fld [startY]			;загружаем смещение
-		fistp [startY]			;запоминаем и извлекаем в целом формате		
-		
-		invoke DrawLine, [hdc], [startX], [startY], [temp], [temp1]
-		
-		fild [temp]				;загружаем temp как целое
-		fstp [temp]				;выгружаем как вещественное
-		
-		mov r9d, [temp]
-		mov [startX], r9d
-		
-		fild [temp1]			;загружаем temp1 как целое
-		fstp [temp1]			;выгружаем как вещественное
-		
-		mov r9d, [temp1]
-		mov [startY], r9d		
-		
-		fld i				;загрузили i
-		fld1				;загрузили единицу
-		fadd st,st(1)		;инкрементировали
-		fst i				;выгрузили i
-		
-		fld [count]
-		fcom				;сравнение st(0) c st(1)
-		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
-		sahf				;содержимое регистра AH переписываем в регистр флагов
-		jnc cycle				; если  i меньше result, то повторяем цикл
-		
-	mov rsi, field_ptr
-	assume rsi:ptr FieldState
-		
-	;							перегружаем переменные из структуры в текущие: начало координат,число точек
-	mov r10d, [rsi].xStart		
-	mov [startX], r10d
-	mov r10d, [rsi].yStart
-	mov [startY], r10d
-	mov r10d, [rsi].count
-	mov [count], r10d	
-
-	mov [i] , 0.	
-	cycle1:
-	
-		finit		
-		fld i			;загрузили i
-		fld oneth
-		fmul st, st(1) 
-		
-		fst [_arg]		;выгрузили полученное значение в аргумент
-		
-		lea rax, [rsi].function_ptr
-		assume rax:nothing
-
-		invoke (func ptr[rax]), [_arg]		;вызвали функцию
-		fst [resfun]			;выгрузили результат функции из стека в локальную переменную		
-		
-		fld [startX]
-		fld [_arg]
-		
-		fsubp st(1), st
-		fistp [temp]			;результат сложения смещения и текущего значение в текущую переменную
-		
-		.if Field.for_ordinate == FO1
-			fld [startY]
-			fld [resfun]
-			fsubp st(1),st			; вычитание st(i) = st(i) - st(0)
-			fistp [temp1]			;результат вычитания из смещения текущего значения в текущую переменную1
-		.elseif Field.for_ordinate == FO2
-			fld [startY]
-			fld [resfun]
-			faddp st(1),st			
-			fistp [temp1]			;результат вычитания из смещения текущего значения в текущую переменную1
-		.endif
-		
-		fld [startX]			;загружаем смещение
-		fistp [startX]			;запоминаем и извлекаем в целом формате
-		
-		fld [startY]			;загружаем смещение
-		fistp [startY]			;запоминаем и извлекаем в целом формате		
-		
-		invoke DrawLine, [hdc], [startX], [startY], [temp], [temp1]
-		
-		fild [temp]				;загружаем temp как целое
-		fst [temp]				;выгружаем как вещественное
-		
-		mov r9d, [temp]
-		mov [startX], r9d
-		
-		fild [temp1]			;загружаем temp1 как целое
-		fst [temp1]				;выгружаем как вещественное
-		
-		mov r9d, [temp1]
-		mov [startY], r9d		
-		
-		fld i				;загрузили i
-		fld1				;загрузили единицу
-		fadd st,st(1)		;инкрементировали
-		fst i				;выгрузили i
-		
-		fld [count]
-		fcom				;сравнение st(0) c st(1)
-		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
-		sahf				;содержимое регистра AH переписываем в регистр флагов
-		jnc cycle1				; если  i меньше result, то повторяем цикл
-		
-	
-	
-	ret
-DrawFunctionXdegree endp
-
 
 DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	local i:qword
@@ -1033,7 +834,6 @@ ctan_proc proc c x:qword
 	local res:qword
 	
 	finit
-	;fld x
 	invoke tan_proc, x
 	fstp [res]
 
@@ -1179,12 +979,12 @@ GetInterval proc field_ptr:ptr FieldState
 	assume rsi:ptr FieldState 
 	
 	xor rax, rax
-	invoke GetWindowTextLength, hEdit1		;получили длину введенной строки
+	invoke GetWindowTextLength, hEditIntA		;получили длину введенной строки
 	mov [stringlen], eax					;загрузили ее в локалку для длины
 	inc [stringlen]							;выделение памяти
 	invoke malloc, [stringlen]
 	mov [string], rax
-	invoke GetWindowText, hEdit1, [string], [stringlen]	;получаем строку
+	invoke GetWindowText, hEditIntA, [string], [stringlen]	;получаем строку
 	
 	invoke atoi, string
 	mov [rsi].x0_cord, eax
@@ -1192,12 +992,12 @@ GetInterval proc field_ptr:ptr FieldState
 	invoke free, string
 	
 	xor rax, rax
-	invoke GetWindowTextLength, hEdit2		;получили длину введенной строки
+	invoke GetWindowTextLength, hEditIntB		;получили длину введенной строки
 	mov [stringlen], eax					;загрузили ее в локалку для длины
 	inc [stringlen]							;выделение памяти
 	invoke malloc, [stringlen]
 	mov [string], rax
-	invoke GetWindowText, hEdit2, [string], [stringlen]	;получаем строку
+	invoke GetWindowText, hEditIntB, [string], [stringlen]	;получаем строку
 	
 	invoke atoi, string
 	mov [rsi].x1_cord, eax
@@ -1231,11 +1031,11 @@ GetIntSum proc frame field_ptr:ptr FieldState
 
 		invoke sprintf, string, $CTA0("%f"), [sum]
 		
-		invoke SetWindowText, hEdit4, string
+		invoke SetWindowText, hEditIntSum, string
 		
 		invoke free, string
 	.else
-		invoke SetWindowText, hEdit4, $CTA0("NONE")
+		invoke SetWindowText, hEditIntSum, $CTA0("NONE")
 		
 	.endif
 
@@ -1261,14 +1061,7 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
     local hdc:HDC
     local ps:PAINTSTRUCT
     local white_brush:HBRUSH
-   
     local color_brush:COLORREF
-    
-    local state:dword
-	local state1:dword
-	local smth:dword
-	
-	mov [smth], 0
 
     .if [iMsg] == WM_CREATE
         ; создание окна
@@ -1309,70 +1102,70 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
     .elseif [iMsg] == WM_COMMAND
 
         movzx eax, word ptr [wParam]
-        .if eax == BT_1
+        .if eax == BT_SQ
 			invoke GetInterval, addr Field
 			mov Field.function, SQX_ID
 			lea rax, sqx
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_2	
+		.elseif eax == BT_CUBE	
 			invoke GetInterval, addr Field
 			mov Field.function, CUBE_ID
 			lea rax, cube
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE		
-		.elseif eax == BT_3	
+		.elseif eax == BT_HYP	
 			invoke GetInterval, addr Field
 			mov Field.function, HYP_ID
 			lea rax, hyperb
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_4	
+		.elseif eax == BT_SIN	
 			invoke GetInterval, addr Field
 			mov Field.function, SIN_ID
 			lea rax, sin_proc
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_5	
+		.elseif eax == BT_COS	
 			invoke GetInterval, addr Field
 			mov Field.function, COS_ID
 			lea rax, cos_proc
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_6	
+		.elseif eax == BT_TG	
 			invoke GetInterval, addr Field
 			mov Field.function, TAN_ID
 			lea rax, tan_proc
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_7	
+		.elseif eax == BT_CTG	
 			invoke GetInterval, addr Field
 			mov Field.function, CTAN_ID
 			lea rax, ctan_proc
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE 
-		.elseif eax == BT_8	
+		.elseif eax == BT_LN	
 			invoke GetInterval, addr Field
 			mov Field.function, LN_ID
 			lea rax, ln_proc
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE  
-		.elseif eax == BT_9	
+		.elseif eax == BT_LG	
 			invoke GetInterval, addr Field
 			mov Field.function, LG_ID
 			lea rax, lg_proc
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_10	
+		.elseif eax == BT_LOG2	
 			invoke GetInterval, addr Field
 			mov Field.function, LOG2_ID
 			lea rax, log2_proc
@@ -1392,12 +1185,8 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
         ; установить цвет текста
         invoke SetTextColor, [hdc], 255 + (255 shl 8) + (255 shl 16)
         
-       
-        
         ; установить цвет фона текста
         invoke SetBkColor, [hdc], 0 + (0 shl 8) + (0 shl 16)
-        
-       
         
         ;создаем кисти нужного цвета
 		mov [color_brush], 255 + 255 shl 8 + 255 shl 16
@@ -1420,8 +1209,8 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
         
         .if Field.function == EMPTY_ID || Field.function == CUBE_ID || Field.function == SIN_ID \
 		|| Field.function == COS_ID || Field.function == TAN_ID || Field.function == CTAN_ID \
-		|| Field.function == HYP_ID || Field.function == SQX_ID \
-		|| Field.function == LOG2_ID || Field.function == LG_ID || Field.function == LN_ID
+		|| Field.function == HYP_ID || Field.function == SQX_ID || Field.function == LOG2_ID \
+		|| Field.function == LG_ID || Field.function == LN_ID
 			invoke DrawAbscissa, [hdc], addr Field
 			invoke DrawOrdinate, [hdc], addr Field
         .endif
