@@ -188,9 +188,9 @@ for_degree dq ?
 globalf dq ?
 
 ;для многочлена
-degs	dq ?	;степени
-coofs	dq ?	;коэффициенты
-signs	dq ?	;знаки (1 -, 0 +)
+;degs	dq ?	;степени
+;coofs	dq ?	;коэффициенты
+;signs	dq ?	;знаки (1 -, 0 +)
 
 glChar dq ?
 
