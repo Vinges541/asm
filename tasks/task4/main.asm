@@ -33,24 +33,24 @@ FieldState ends
 ; строкова€ константа с именем окна
 AppWindowName equ <"Graphics">
 
-BT_SQ equ 204
-BT_CUBE equ 205
-BT_HYP equ 206
-BT_SIN equ 207
-BT_COS equ 208
-BT_TG equ 209
-BT_CTG equ 210
-BT_LN equ 211
-BT_LG equ 212
-BT_LOG2 equ 213     
+BT_SQ		equ 204
+BT_CUBE		equ 205
+BT_HYP		equ 206
+BT_SIN		equ 207
+BT_COS		equ 208
+BT_TG		equ 209
+BT_CTG		equ 210
+BT_LN		equ 211
+BT_LG		equ 212
+BT_LOG2		equ 213     
 
 SQX_ID		equ 101
 CUBE_ID		equ	102
 HYP_ID		equ 103
 SIN_ID		equ 104
 COS_ID		equ 105
-TAN_ID		equ 106
-CTAN_ID		equ 107
+TG_ID		equ 106
+CTG_ID		equ 107
 LN_ID		equ 108
 LG_ID		equ 109
 LOG2_ID		equ 110
@@ -89,25 +89,25 @@ InitFieldState proto ptr_field:ptr FieldState
 
 func typedef proto c:qword
 
-sqx proto c x:qword
+sq_func proto c x:qword
 
-cube proto c x:qword
+cube_func proto c x:qword
 
-hyperb proto c x:qword
+hyp_func proto c x:qword
 
-sin_proc proto c x:qword
+sin_func proto c x:qword
 
-cos_proc proto c x:qword
+cos_func proto c x:qword
 
-log2_proc proto c x:qword
+log2_func proto c x:qword
 
-lg_proc proto c x:qword
+lg_func proto c x:qword
 
-ln_proc proto c x:qword
+ln_func proto c x:qword
 
-tan_proc proto c x:qword
+tg_func proto c x:qword
 
-ctan_proc proto c x:qword
+ctg_func proto c x:qword
 
 IntSum proto c a:qword, b:qword, function:qword
 
@@ -291,6 +291,7 @@ CreateControlWindowsMain proc  hwnd:HWND
     
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 720, 40, 60, 20, hwnd, ED_INT_A , hIns, NULL
 	mov hEditIntA, rax
+
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 840, 40, 60, 20, hwnd, ED_INT_B , hIns, NULL
 	mov hEditIntB, rax
 
@@ -349,7 +350,7 @@ DrawAbscissa proc frame hdc:HDC, field_ptr:ptr FieldState
 	fistp [startY]
 	
 	fld [rsi].xStart
-	fld [rsi].AbsPart1 ;отрицателььна€ полуось
+	fld [rsi].AbsPart1 ;отрицательна€ полуось
 	fsubp st(1), st
 	fistp [startX]
 	
@@ -383,11 +384,11 @@ DrawOrdinate proc frame hdc:HDC, field_ptr:ptr FieldState
 	fistp [startY]
 	
 	fld [rsi].yStart
-	fld [rsi].OrdPart ;ќ“–»÷ј“≈Ћ№Ќјя полуось
+	fld [rsi].OrdPart ;отрицательна€ полуось
 	faddp st(1), st
 	fistp [endY]
 
-  invoke DrawLine, [hdc], [startX], [startY], [startX], [endY]
+	invoke DrawLine, [hdc], [startX], [startY], [startX], [endY]
     ret
 DrawOrdinate endp
 
@@ -464,7 +465,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		fcom 
 		fstsw ax			;переписываем содержимое регистра состо€ни€ сопроцессора в AX 
 		sahf				;содержимое регистра AH переписываем в регистр флагов
-		jnc oper				; если  x0 меньше 0
+		jnc oper			; если  x0 меньше 0
 		jmp exit1
 		oper:
 		fldz 
@@ -571,22 +572,20 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	.if [rsi].function == SQX_ID 	
 		fldz
 		fstp [_min] ;это только в случае параболы от нул€ до максимума!
-	.elseif [rsi].function == CUBE_ID		;дл€ кубической параболы
+	.elseif [rsi].function == CUBE_ID || [rsi].function == LOG2_ID \
+	|| [rsi].function == LG_ID || [rsi].function == LN_ID
 		fld [fx0]
 		fstp [_min]
-	.elseif [rsi].function == SIN_ID || [rsi].function == COS_ID		;дл€ синуса и косинуса
+	.elseif [rsi].function == SIN_ID || [rsi].function == COS_ID
 		fld [ed]
 		fstp [_max]
 		fld [ed1]
 		fstp [_min]
-	.elseif [rsi].function == TAN_ID ||	[rsi].function == CTAN_ID || [rsi].function == HYP_ID		;дл€ тангенса, котангенса и логарифма
+	.elseif [rsi].function == TG_ID ||	[rsi].function == CTG_ID || [rsi].function == HYP_ID
 		fld [hun]
 		fstp [_max]
 		fld [hun1]
 		fstp [_min]
-	.elseif [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	;дл€ логарифма
-		fld [fx0]
-		fstp [_min]	
 	.endif
 	mov globalf, 1	; костылище,чтобы заработал логарифм
 	invoke ZoomFunc, [_min], [_max]
@@ -727,7 +726,7 @@ DrawFunctionByPixel endp
 ;—опроцессорные функции арифметических вычислений
 ;---------------------------------------------
 ;‘ункци€ вычислени€ квадрата числа
-sqx proc c x:qword
+sq_func proc c x:qword
 			
 	finit					;инициализаци€ сопроцессора
 	fld x					;загрузка вещественного числа из €чейки пам€ти x1 в st(0)
@@ -736,10 +735,10 @@ sqx proc c x:qword
 	fmul st,st(1)			;умножение с записью результата в st(0)
 	
 	ret
-sqx endp 
+sq_func endp 
 
 ;‘ункци€ вычислени€ куба числа
-cube proc c x:qword
+cube_func proc c x:qword
 			
 	finit					;инициализаци€ сопроцессора
 	fld x					;загрузка вещественного числа из €чейки пам€ти x1 в st(0)
@@ -749,10 +748,10 @@ cube proc c x:qword
 	fmul st,st(1)			;умножение с записью результата в st(0)	
 
 	ret
-cube endp
+cube_func endp
 
 ;функци€ вычислени€ обратно пропорциональной зависимости
-hyperb proc c x:qword
+hyp_func proc c x:qword
 	finit
 	fld1
 	fld x
@@ -760,10 +759,10 @@ hyperb proc c x:qword
 	fdiv
 
 	ret
-hyperb endp
+hyp_func endp
 
 ;функци€ вычислени€ синуса
-sin_proc proc c x:qword
+sin_func proc c x:qword
 
 	finit
 	fld x
@@ -771,10 +770,10 @@ sin_proc proc c x:qword
 	fsin
 
 	ret
-sin_proc endp
+sin_func endp
 
 ;функци€ вычислени€ косинуса
-cos_proc proc c x:qword
+cos_func proc c x:qword
 	
 	finit
 	fld x
@@ -782,10 +781,10 @@ cos_proc proc c x:qword
 	fcos
 
 	ret
-cos_proc endp
+cos_func endp
 
 ;функци€ вычислени€ логарифма по основанию 2
-log2_proc proc c x:qword
+log2_func proc c x:qword
 ;логарифм вычисл€етс€ только дл€ х>=0
 	finit 
 		
@@ -794,32 +793,34 @@ log2_proc proc c x:qword
 	fyl2x
 
 	ret
-log2_proc endp
+log2_func endp
 
-lg_proc proc c x:qword
-	local temp:qword
+lg_func proc c x:qword
 	finit
-	invoke log2_proc, x
-	fst [temp]
+	invoke log2_func, x
 	
 	fldl2t
+
+	;log_10(x) = log_2(x)/log_2(10)
 	fdivp st(1), st	
 	
 	ret
-lg_proc endp
+lg_func endp
 
-ln_proc proc c x:qword
+ln_func proc c x:qword
 	finit
-	invoke log2_proc, x
+	invoke log2_func, x
 
 	fldln2
-	fmul st, st(1)
+
+	;log_2(x) * log_e(x) = log_e(x) * log_2(2) = log_e(x)
+	fmul st, st(1) 
 	
 	ret
-ln_proc endp
+ln_func endp
 
 ;функци€ вычислени€ тангенса
-tan_proc proc c x:qword
+tg_func proc c x:qword
 	local temp:qword
 	
 	finit 
@@ -827,14 +828,14 @@ tan_proc proc c x:qword
 	fptan
 	fstp [temp] ; можно заменить на fincstp	
 	ret
-tan_proc endp
+tg_func endp
 
 ;функци€ вычислени€ котангенса
-ctan_proc proc c x:qword
+ctg_func proc c x:qword
 	local res:qword
 	
 	finit
-	invoke tan_proc, x
+	invoke tg_func, x
 	fstp [res]
 
 	fld [res]
@@ -843,14 +844,13 @@ ctan_proc proc c x:qword
 	fst [res]
 
 	ret
-ctan_proc endp
+ctg_func endp
 
 IntSum proc c a:qword, b:qword, function:qword
 	local i:qword
 	local sum:qword
 	
 	local result:qword
-	local result1:qword
 	local fun:qword
 	
 	
@@ -964,7 +964,7 @@ InitFieldState proc frame ptr_field:ptr FieldState
 	mov Field.AbsPart, 310.
 	mov Field.AbsPart1, 310.
 	
-	lea rax, log2_proc
+	lea rax, log2_func
 	mov Field.function_ptr, rax
 	
 	
@@ -979,12 +979,12 @@ GetInterval proc field_ptr:ptr FieldState
 	assume rsi:ptr FieldState 
 	
 	xor rax, rax
-	invoke GetWindowTextLength, hEditIntA		;получили длину введенной строки
-	mov [stringlen], eax					;загрузили ее в локалку дл€ длины
-	inc [stringlen]							;выделение пам€ти
+	invoke GetWindowTextLength, hEditIntA	
+	mov [stringlen], eax					
+	inc [stringlen]							
 	invoke malloc, [stringlen]
 	mov [string], rax
-	invoke GetWindowText, hEditIntA, [string], [stringlen]	;получаем строку
+	invoke GetWindowText, hEditIntA, [string], [stringlen]
 	
 	invoke atoi, string
 	mov [rsi].x0_cord, eax
@@ -992,12 +992,12 @@ GetInterval proc field_ptr:ptr FieldState
 	invoke free, string
 	
 	xor rax, rax
-	invoke GetWindowTextLength, hEditIntB		;получили длину введенной строки
-	mov [stringlen], eax					;загрузили ее в локалку дл€ длины
-	inc [stringlen]							;выделение пам€ти
+	invoke GetWindowTextLength, hEditIntB	
+	mov [stringlen], eax					
+	inc [stringlen]							
 	invoke malloc, [stringlen]
 	mov [string], rax
-	invoke GetWindowText, hEditIntB, [string], [stringlen]	;получаем строку
+	invoke GetWindowText, hEditIntB, [string], [stringlen]
 	
 	invoke atoi, string
 	mov [rsi].x1_cord, eax
@@ -1102,77 +1102,56 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
     .elseif [iMsg] == WM_COMMAND
 
         movzx eax, word ptr [wParam]
-        .if eax == BT_SQ
+
+		push rax
+		.if  eax == BT_SQ || eax == BT_CUBE || eax == BT_HYP \
+		|| eax == BT_SIN || eax == BT_COS || eax == BT_TG \
+		|| eax == BT_CTG || eax == BT_LN || eax == BT_LG \
+		|| eax == BT_LOG2
 			invoke GetInterval, addr Field
+		.endif
+		pop rbx
+        .if ebx == BT_SQ
 			mov Field.function, SQX_ID
-			lea rax, sqx
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_CUBE	
-			invoke GetInterval, addr Field
+			lea rax, sq_func
+		.elseif ebx == BT_CUBE	
 			mov Field.function, CUBE_ID
-			lea rax, cube
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE		
-		.elseif eax == BT_HYP	
-			invoke GetInterval, addr Field
+			lea rax, cube_func	
+		.elseif ebx == BT_HYP	
 			mov Field.function, HYP_ID
-			lea rax, hyperb
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_SIN	
-			invoke GetInterval, addr Field
+			lea rax, hyp_func
+		.elseif ebx == BT_SIN	
 			mov Field.function, SIN_ID
-			lea rax, sin_proc
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_COS	
-			invoke GetInterval, addr Field
+			lea rax, sin_func
+		.elseif ebx == BT_COS	
 			mov Field.function, COS_ID
-			lea rax, cos_proc
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_TG	
-			invoke GetInterval, addr Field
-			mov Field.function, TAN_ID
-			lea rax, tan_proc
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_CTG	
-			invoke GetInterval, addr Field
-			mov Field.function, CTAN_ID
-			lea rax, ctan_proc
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE 
-		.elseif eax == BT_LN	
-			invoke GetInterval, addr Field
+			lea rax, cos_func
+		.elseif ebx == BT_TG
+			mov Field.function, TG_ID
+			lea rax, tg_func
+		.elseif ebx == BT_CTG	
+			mov Field.function, CTG_ID
+			lea rax, ctg_func
+		.elseif ebx == BT_LN	
 			mov Field.function, LN_ID
-			lea rax, ln_proc
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE  
-		.elseif eax == BT_LG	
-			invoke GetInterval, addr Field
+			lea rax, ln_func 
+		.elseif ebx == BT_LG
 			mov Field.function, LG_ID
-			lea rax, lg_proc
-			mov Field.function_ptr, rax
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		.elseif eax == BT_LOG2	
-			invoke GetInterval, addr Field
+			lea rax, lg_func
+		.elseif ebx == BT_LOG2	
 			mov Field.function, LOG2_ID
-			lea rax, log2_proc
+			lea rax, log2_func
+		.endif
+
+		.if  ebx == BT_SQ || ebx == BT_CUBE || ebx == BT_HYP \
+		|| ebx == BT_SIN || ebx == BT_COS || ebx == BT_TG \
+		|| ebx == BT_CTG || ebx == BT_LN || ebx == BT_LG \
+		|| ebx == BT_LOG2
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
 		.endif
+
         ret
         
     .elseif [iMsg] == WM_PAINT
@@ -1208,7 +1187,7 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 		invoke DrawFunctionByPixel, [hdc], addr Field
         
         .if Field.function == EMPTY_ID || Field.function == CUBE_ID || Field.function == SIN_ID \
-		|| Field.function == COS_ID || Field.function == TAN_ID || Field.function == CTAN_ID \
+		|| Field.function == COS_ID || Field.function == TG_ID || Field.function == CTG_ID \
 		|| Field.function == HYP_ID || Field.function == SQX_ID || Field.function == LOG2_ID \
 		|| Field.function == LG_ID || Field.function == LN_ID
 			invoke DrawAbscissa, [hdc], addr Field
