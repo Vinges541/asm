@@ -14,10 +14,10 @@ FieldState struct
 	xStart			dword ?		;начало координат по иксу
 	yStart			dword ?		;начало координат по игреку
 	
-	OrdPart			dword ?		;длина полуординаты
-	OrdPart1		dword ?		;	
-	AbsPart			dword ?		;длина полуабсциссы
-	AbsPart1		dword ?		;
+	OrdNeg			dword ?		;длина полуординаты
+	OrdPos			dword ?		;	
+	AbsPos			dword ?		;длина полуабсциссы
+	AbsNeg			dword ?		;
 
 	function		dword ?		;идентификатор функции
 	function_ptr	qword ?
@@ -335,62 +335,52 @@ DrawLine proc frame hdc:HDC, startX:dword, startY:dword, endX:dword, endY:dword
     ret
 DrawLine endp
 ;--------------------
-; Рисует ось абсцисс.
-DrawAbscissa proc frame hdc:HDC, field_ptr:ptr FieldState
+; Рисует оси.
+DrawAxis proc frame hdc:HDC, field_ptr:ptr FieldState
 
 	local startX:dword
 	local startY:dword
 	local endX:dword
-	
+	local endY:dword
+
 	mov rsi, field_ptr
 	assume rsi:ptr FieldState 
 	
 	finit
+	;ось абсцисс
 	fld [rsi].yStart
 	fistp [startY]
 	
 	fld [rsi].xStart
-	fld [rsi].AbsPart1 ;отрицательная полуось
+	fld [rsi].AbsNeg ;отрицательная полуось
 	fsubp st(1), st
 	fistp [startX]
 	
 	fld [rsi].xStart
-	fld [rsi].AbsPart ;положительная полуось
+	fld [rsi].AbsPos ;положительная полуось
 	faddp st(1), st
 	fistp [endX]
 	
-	
-
 	invoke DrawLine, [hdc], [startX], [startY], [endX], [startY]
-    ret
-DrawAbscissa endp
 
-; Рисует ось ординат.
-DrawOrdinate proc frame hdc:HDC, field_ptr:ptr FieldState
-    local startY:dword
-    local startX:dword	
-	local endY:dword
-	
-	mov rsi, field_ptr
-	assume rsi:ptr FieldState 
-	
-	finit
+	;ось ординат
 	fld [rsi].xStart
 	fistp [startX]
 	
 	fld [rsi].yStart
-	fld [rsi].OrdPart1 ;положительная полуось
+	fld [rsi].OrdPos
 	fsubp st(1), st
 	fistp [startY]
 	
 	fld [rsi].yStart
-	fld [rsi].OrdPart ;отрицательная полуось
+	fld [rsi].OrdNeg
 	faddp st(1), st
 	fistp [endY]
 
 	invoke DrawLine, [hdc], [startX], [startY], [startX], [endY]
+
     ret
-DrawOrdinate endp
+DrawAxis endp
 
 DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	local i:qword
@@ -500,7 +490,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	fmulp st(1), st
 	fld [one]
 	faddp st(1), st
-	fstp [rsi].AbsPart1
+	fstp [rsi].AbsNeg
 	
 	fld [b]
 	fst [halfint1]		;длина полуинтервала [0,b]
@@ -508,7 +498,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	fmulp st(1), st
 	fld [one]
 	faddp st(1), st
-	fstp [rsi].AbsPart
+	fstp [rsi].AbsPos
 	
 	fld [halfint]
 	fld [onepartx]
@@ -616,7 +606,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	fmulp st(1), st
 	fld [one]	
 	faddp st(1), st
-	fstp [rsi].OrdPart1	;положительная полуось
+	fstp [rsi].OrdPos	;положительная полуось
 	
 	fld [_min]
 	fchs
@@ -624,7 +614,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	fmulp st(1), st
 	fld [one]	
 	faddp st(1), st
-	fstp [rsi].OrdPart ;отрицательная полуось
+	fstp [rsi].OrdNeg ;отрицательная полуось
 	
 	fild [x0]
 	fstp [x0v]
@@ -727,26 +717,21 @@ DrawFunctionByPixel endp
 ;---------------------------------------------
 ;Функция вычисления квадрата числа
 sq_func proc c x:qword
-			
 	finit					;инициализация сопроцессора
 	fld x					;загрузка вещественного числа из ячейки памяти x1 в st(0)
 	fld x
-
 	fmul st,st(1)			;умножение с записью результата в st(0)
-	
 	ret
 sq_func endp 
 
 ;Функция вычисления куба числа
-cube_func proc c x:qword
-			
+cube_func proc c x:qword	
 	finit					;инициализация сопроцессора
 	fld x					;загрузка вещественного числа из ячейки памяти x1 в st(0)
 	fld x
 	fmul st,st(1)			;умножение с записью результата в st(0)	
 	fld x
 	fmul st,st(1)			;умножение с записью результата в st(0)	
-
 	ret
 cube_func endp
 
@@ -755,31 +740,23 @@ hyp_func proc c x:qword
 	finit
 	fld1
 	fld x
-	
 	fdiv
-
 	ret
 hyp_func endp
 
 ;функция вычисления синуса
 sin_func proc c x:qword
-
 	finit
 	fld x
-
 	fsin
-
 	ret
 sin_func endp
 
 ;функция вычисления косинуса
 cos_func proc c x:qword
-	
 	finit
 	fld x
-
 	fcos
-
 	ret
 cos_func endp
 
@@ -787,42 +764,34 @@ cos_func endp
 log2_func proc c x:qword
 ;логарифм вычисляется только для х>=0
 	finit 
-		
 	fld1
 	fld x
 	fyl2x
-
 	ret
 log2_func endp
 
 lg_func proc c x:qword
 	finit
 	invoke log2_func, x
-	
 	fldl2t
-
 	;log_10(x) = log_2(x)/log_2(10)
 	fdivp st(1), st	
-	
 	ret
 lg_func endp
 
 ln_func proc c x:qword
 	finit
 	invoke log2_func, x
-
 	fldln2
-
 	;log_2(x) * log_e(x) = log_e(x) * log_2(2) = log_e(x)
 	fmul st, st(1) 
-	
 	ret
 ln_func endp
 
 ;функция вычисления тангенса
 tg_func proc c x:qword
 	local temp:qword
-	
+
 	finit 
 	fld x
 	fptan
@@ -959,10 +928,10 @@ InitFieldState proc frame ptr_field:ptr FieldState
 	mov Field.xStart, 330.
 	mov Field.yStart, 330.
 	
-	mov Field.OrdPart, 310.
-	mov Field.OrdPart1, 310.
-	mov Field.AbsPart, 310.
-	mov Field.AbsPart1, 310.
+	mov Field.OrdNeg, 310.
+	mov Field.OrdPos, 310.
+	mov Field.AbsPos, 310.
+	mov Field.AbsNeg, 310.
 	
 	lea rax, log2_func
 	mov Field.function_ptr, rax
@@ -1190,8 +1159,7 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 		|| Field.function == COS_ID || Field.function == TG_ID || Field.function == CTG_ID \
 		|| Field.function == HYP_ID || Field.function == SQX_ID || Field.function == LOG2_ID \
 		|| Field.function == LG_ID || Field.function == LN_ID
-			invoke DrawAbscissa, [hdc], addr Field
-			invoke DrawOrdinate, [hdc], addr Field
+			invoke DrawAxis, [hdc], addr Field
         .endif
                 
         ; завершение перерисовки
