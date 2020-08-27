@@ -33,45 +33,43 @@ endm
 ;----------------------------------------
 
 FieldState struct 
-	xStart			dword ?		;РЅР°С‡Р°Р»Рѕ РєРѕРѕСЂРґРёРЅР°С‚ РїРѕ РёРєСЃСѓ
-	yStart			dword ?		;РЅР°С‡Р°Р»Рѕ РєРѕРѕСЂРґРёРЅР°С‚ РїРѕ РёРіСЂРµРєСѓ
+	xStart			dword ?		;начало координат по иксу
+	yStart			dword ?		;начало координат по игреку
 	
-	OrdPart			dword ?		;РґР»РёРЅР° РїРѕР»СѓРѕСЂРґРёРЅР°С‚С‹
+	OrdPart			dword ?		;длина полуординаты
 	OrdPart1		dword ?		;	
-	AbsPart			dword ?		;РґР»РёРЅР° РїРѕР»СѓР°Р±СЃС†РёСЃСЃС‹
+	AbsPart			dword ?		;длина полуабсциссы
 	AbsPart1		dword ?		;
 
-	function		dword ?		;РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С„СѓРЅРєС†РёРё
+	function		dword ?		;идентификатор функции
 	function_ptr	qword ?
 
-	count			dword ?		;РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє
-	for_ordinate	dword ?		;РїРѕР»Рµ РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ РЅР°РїСЂР°РІР»РµРЅРёСЏ РѕС‚СЂРёСЃРѕРІРєРё РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№ РІРµС‚РІРё (РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ РќР•РїРёРєСЃР»РµСЊРЅРѕРј СЂРёСЃРѕРІР°РЅРёРё)
+	count			dword ?		;количество точек
+	for_ordinate	dword ?		;поле для определения направления отрисовки отрицательной ветви (используется только в НЕпикслеьном рисовании)
 	
-	x0_cord			dword ?		;РёРЅС‚РµСЂРІР°Р» РґР»СЏ РґРµР№СЃС‚РІРёР№ СЃ С„СѓРЅРєС†РёРµР№
+	x0_cord			dword ?		;интервал для действий с функцией
 	x1_cord			dword ?
 
 FieldState ends
 
-; СЃС‚СЂРѕРєРѕРІР°СЏ РєРѕРЅСЃС‚Р°РЅС‚Р° СЃ РёРјРµРЅРµРј РѕРєРЅР°
+; строковая константа с именем окна
 AppWindowName equ <"Graphics">
 
 
 
-ED_1 equ 201     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РІРµСЂС…РЅРµРіРѕ С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ
-ED_2 equ 202     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РЅРёР¶РЅРµРіРѕ С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ
-ST_1 equ 203     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚Р°С‚РёС‡РµСЃРєРѕРіРѕ РѕРєРЅР°
-BT_1 equ 204     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_2 equ 205     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_3 equ 206     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_4 equ 207     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_5 equ 208     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_6 equ 209     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_7 equ 210     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_8 equ 211     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_9 equ 212     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_10 equ 213     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-;BT_11 equ 214     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
-BT_12 equ 215     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРЅРѕРїРєРё
+ED_1 equ 201     ; идентификатор верхнего текстового поля
+ED_2 equ 202     ; идентификатор нижнего текстового поля
+ST_1 equ 203     ; идентификатор статического окна
+BT_1 equ 204     ; идентификатор кнопки
+BT_2 equ 205     ; идентификатор кнопки
+BT_3 equ 206     ; идентификатор кнопки
+BT_4 equ 207     ; идентификатор кнопки
+BT_5 equ 208     ; идентификатор кнопки
+BT_6 equ 209     ; идентификатор кнопки
+BT_7 equ 210     ; идентификатор кнопки
+BT_8 equ 211     ; идентификатор кнопки
+BT_9 equ 212     ; идентификатор кнопки
+BT_10 equ 213     ; идентификатор кнопки
 
 LINE_ID		equ 100
 SQX_ID		equ 101
@@ -84,20 +82,17 @@ CTAN_ID		equ 107
 LN_ID		equ 108
 LG_ID		equ 109
 LOG2_ID		equ 110
-DEG_ID		equ 111
-POLY_ID		equ 112
 EMPTY_ID	equ 113
 
-FO1 equ 114	;РєРѕРЅСЃС‚Р°РЅС‚С‹ РґР»СЏ for_ordinate
+FO1 equ 114	;константы для for_ordinate
 FO2 equ 115
 
-ED_5	equ 240     ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ РІРІРѕРґР° С„СѓРЅРєС†РёРё
+ED_5	equ 240     ; идентификатор текстового поля ввода функции
 ED_6	equ 241
-;ED_7	equ 242
 ED_8	equ 243
 
 ;----------------------------------------
-; РѕР±СЉСЏРІР»РµРЅРёРµ С„СѓРЅРєС†РёР№
+; объявление функций
 
 RegisterClassMainWindow proto
 
@@ -113,13 +108,9 @@ DrawFunctionXdegree proto hdc:HDC, field_ptr:ptr FieldState
 
 DrawFunctionByPixel proto hdc:HDC, field_ptr:ptr FieldState
 
-ZoomFunc proto a:dword, b:dword;, field_ptr:ptr FieldState
+ZoomFunc proto a:dword, b:dword
 
 GetInterval proto field_ptr:ptr FieldState
-
-;GetPolynom proto field_ptr:ptr FieldState
-
-ReturnPolynom proto c x:qword
 
 GetIntSum proto field_ptr:ptr FieldState
 
@@ -132,10 +123,6 @@ InitFieldState proto ptr_field:ptr FieldState
 func typedef proto c:qword
 
 sqx proto c x:qword
-
-degree proto c x:qword;, y:qword
-
-degreey proto x:qword, y:qword
 
 cube proto c x:qword
 
@@ -158,7 +145,7 @@ ctan_proc proto c x:qword
 IntSum proto c a:qword, b:qword, function:qword
 
 ;----------------------------------------
-; РѕРїРёСЃР°РЅРёРµ РґР°РЅРЅС‹С…
+; описание данных
 
 .data
 mas dq 100 dup (0)
@@ -178,39 +165,27 @@ hButton7 HWND  ?
 hButton8 HWND  ?
 hButton9 HWND  ?
 hButton10 HWND  ?
-hButton11 HWND  ?
-hButton12 HWND  ?
-
-x3 dq ?
-
-for_degree dq ?
 
 globalf dq ?
-
-;РґР»СЏ РјРЅРѕРіРѕС‡Р»РµРЅР°
-;degs	dq ?	;СЃС‚РµРїРµРЅРё
-;coofs	dq ?	;РєРѕСЌС„С„РёС†РёРµРЅС‚С‹
-;signs	dq ?	;Р·РЅР°РєРё (1 -, 0 +)
 
 glChar dq ?
 
 hIns HINSTANCE ?
 
 HwndMainWindow HWND ?
-hEdit1			HWND ?	;handle РґРѕС‡РµСЂРЅРµРіРѕ РѕРєРЅР°(РїРѕР»СЏ РІРІРѕРґР° РёРЅС‚РµСЂРІР°Р»Р°)
+hEdit1			HWND ?	;handle дочернего окна(поля ввода интервала)
 hEdit2			HWND ?
-hEdit3			HWND ?  ;handle РґР»СЏ РїРѕР»СЏ РІРІРѕРґР° С„СѓРЅРєС†РёРё
 hEdit4			HWND ?
 
 .const
 
 ;----------------------------------------
-; РѕРїРёСЃР°РЅРёРµ С„СѓРЅРєС†РёР№
+; описание функций
 
 .code
 
 ;
-; РћСЃРЅРѕРІРЅР°СЏ С„СѓРЅРєС†РёСЏ РѕРєРѕРЅРЅС‹С… РїСЂРёР»РѕР¶РµРЅРёР№
+; Основная функция оконных приложений
 ;
 WinMain proc frame hInstance:HINSTANCE, hPrevInstance:HINSTANCE, szCmdLine:PSTR, iCmdShow:DWORD
 
@@ -226,7 +201,7 @@ WinMain proc frame hInstance:HINSTANCE, hPrevInstance:HINSTANCE, szCmdLine:PSTR,
         ret
     .endif
 	
-	; РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
+	; Основной цикл обработки сообщений
     .while TRUE
         invoke GetMessage, addr msg, NULL, 0, 0
             .break .if rax == 0
@@ -243,30 +218,30 @@ WinMain endp
 ;--------------------
 
 ;
-; Р РµРіРёСЃС‚СЂР°С†РёСЏ РєР»Р°СЃСЃР° РѕСЃРЅРѕРІРЅРѕРіРѕ РѕРєРЅР° РїСЂРёР»РѕР¶РµРЅРёСЏ
+; Регистрация класса основного окна приложения
 ;
 RegisterClassMainWindow proc frame
 
-    local WndClass:WNDCLASSEX	; СЃС‚СЂСѓРєС‚СѓСЂР° РєР»Р°СЃСЃР°
+    local WndClass:WNDCLASSEX	; структура класса
 
-    ; Р·Р°РїРѕР»РЅСЏРµРј РїРѕР»СЏ СЃС‚СЂСѓРєС‚СѓСЂС‹
-    mov WndClass.cbSize, sizeof (WNDCLASSEX)    ; СЂР°Р·РјРµСЂ СЃС‚СЂСѓРєС‚СѓСЂС‹ РєР»Р°СЃСЃР°
+    ; заполняем поля структуры
+    mov WndClass.cbSize, sizeof (WNDCLASSEX)    ; размер структуры класса
     mov WndClass.style, 0
     mov rax, offset WndProcMain
-    mov WndClass.lpfnWndProc,  rax              ; Р°РґСЂРµСЃ РѕРєРѕРЅРЅРѕР№ РїСЂРѕС†РµРґСѓСЂС‹ РєР»Р°СЃСЃР°
+    mov WndClass.lpfnWndProc,  rax              ; адрес оконной процедуры класса
     mov WndClass.cbClsExtra, 0
-    mov WndClass.cbWndExtra, 0                  ; СЂР°Р·РјРµСЂ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕР№ РїР°РјСЏС‚Рё РѕРєРЅР°
+    mov WndClass.cbWndExtra, 0                  ; размер дополнительной памяти окна
     mov rax, [hIns]
-    mov WndClass.hInstance, rax	                ; РѕРїРёСЃР°С‚РµР»СЊ РїСЂРёР»РѕР¶РµРЅРёСЏ
-    invoke LoadIcon, hIns, $CTA0("MainIcon")    ; РёРєРѕРЅРєР° РїСЂРёР»РѕР¶РµРЅРёСЏ
+    mov WndClass.hInstance, rax	                ; описатель приложения
+    invoke LoadIcon, hIns, $CTA0("MainIcon")    ; иконка приложения
     mov WndClass.hIcon, rax
     invoke LoadCursor, NULL, IDC_ARROW
     mov WndClass.hCursor, rax
-    invoke GetStockObject, BLACK_BRUSH          ; РєРёСЃС‚СЊ РґР»СЏ С„РѕРЅР°
+    invoke GetStockObject, BLACK_BRUSH          ; кисть для фона
     mov WndClass.hbrBackground, rax
     mov WndClass.lpszMenuName, NULL
     mov rax, $CTA0(AppWindowName)
-    mov WndClass.lpszClassName, rax             ; РёРјСЏ РєР»Р°СЃСЃР°
+    mov WndClass.lpszClassName, rax             ; имя класса
     invoke LoadIcon, hIns, $CTA0("MainIcon")
     mov WndClass.hIconSm, rax
 
@@ -275,33 +250,33 @@ RegisterClassMainWindow proc frame
 RegisterClassMainWindow endp
 
 ;--------------------
-; РЎРѕР·РґР°РЅРёРµ РѕСЃРЅРѕРІРЅРѕРіРѕ РѕРєРЅР° РїСЂРёР»РѕР¶РµРЅРёСЏ
+; Создание основного окна приложения
 ;
 CreateMainWindow proc frame
 
     local hwnd:HWND
 
-    ; СЂРµРіРёСЃС‚СЂР°С†РёСЏ РєР»Р°СЃСЃР° РѕСЃРЅРѕРІРЅРѕРіРѕ РѕРєРЅР°
+    ; регистрация класса основного окна
     invoke RegisterClassMainWindow
 
-    ; СЃРѕР·РґР°РЅРёРµ РѕРєРЅР° Р·Р°СЂРµРіРµСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
+    ; создание окна зарегестрированного класса
     invoke CreateWindowEx, 
-        WS_EX_CONTROLPARENT or WS_EX_APPWINDOW, ; СЂР°СЃС€РёСЂРµРЅРЅС‹Р№ СЃС‚РёР»СЊ РѕРєРЅР°
-        $CTA0(AppWindowName),	; РёРјСЏ Р·Р°СЂРµРіРµСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР° РѕРєРЅР°
-        $CTA0("Application"),	; Р·Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°
-        WS_SYSMENU,	; СЃС‚РёР»СЊ РѕРєРЅР°
-        10,	    ; X-РєРѕРѕСЂРґРёРЅР°С‚Р° Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р°
-        10,	    ; Y-РєРѕРѕСЂРґРёРЅР°С‚Р° Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р°
-        960,    ; С€РёСЂРёРЅР° РѕРєРЅР°
-        700,    ; РІС‹СЃРѕС‚Р° РѕРєРЅР°
-        NULL,   ; РѕРїРёСЃР°С‚РµР»СЊ СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР°
-        NULL,   ; РѕРїРёСЃР°С‚РµР»СЊ РіР»Р°РІРЅРѕРіРѕ РјРµРЅСЋ (РґР»СЏ РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°)
-        [hIns], ; РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+        WS_EX_CONTROLPARENT or WS_EX_APPWINDOW, ; расширенный стиль окна
+        $CTA0(AppWindowName),	; имя зарегестрированного класса окна
+        $CTA0("Application"),	; заголовок окна
+        WS_SYSMENU,	; стиль окна
+        10,	    ; X-координата левого верхнего угла
+        10,	    ; Y-координата левого верхнего угла
+        960,    ; ширина окна
+        700,    ; высота окна
+        NULL,   ; описатель родительского окна
+        NULL,   ; описатель главного меню (для главного окна)
+        [hIns], ; идентификатор приложения
         NULL
     mov [hwnd], rax
     
     .if [hwnd] == 0
-        invoke MessageBox, NULL, $CTA0("РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ РѕСЃРЅРѕРІРЅРѕРіРѕ РѕРєРЅР° РїСЂРёР»РѕР¶РµРЅРёСЏ"), NULL, MB_OK
+        invoke MessageBox, NULL, $CTA0("Ошибка создания основного окна приложения"), NULL, MB_OK
         xor rax, rax
         ret
     .endif
@@ -314,7 +289,7 @@ CreateMainWindow proc frame
 CreateMainWindow endp
 
 ;--------------------
-;РЎРѕР·РґР°РЅРёРµ СѓРїСЂР°РІР»СЏСЋС‰РёС… СЌР»РµРјРµРЅС‚РѕРІ (РєРѕРЅС‚СЂРѕР»РѕРІ) РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°
+;Создание управляющих элементов (контролов) главного окна
 CreateControlWindowsMain proc  hwnd:HWND
 	
 	invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = x^2"), WS_CHILD or WS_VISIBLE , 680, 90, 100, 26, hwnd, BT_1, hIns, NULL
@@ -326,85 +301,74 @@ CreateControlWindowsMain proc  hwnd:HWND
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = 1/x"), WS_CHILD or WS_VISIBLE , 680, 130, 100, 26, hwnd, BT_3, hIns, NULL
     mov [hButton3], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = sin x"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_4, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = sin(x)"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_4, hIns, NULL
     mov [hButton4], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = cos x"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_5, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = cos(x)"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_5, hIns, NULL
     mov [hButton5], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = tg x"), WS_CHILD or WS_VISIBLE , 800, 170, 100, 26, hwnd, BT_6, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = tg(x)"), WS_CHILD or WS_VISIBLE , 800, 170, 100, 26, hwnd, BT_6, hIns, NULL
     mov [hButton6], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y =ctg x "), WS_CHILD or WS_VISIBLE , 680, 210, 100, 26, hwnd, BT_7, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ctg(x)"), WS_CHILD or WS_VISIBLE , 680, 210, 100, 26, hwnd, BT_7, hIns, NULL
     mov [hButton7], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ln x"), WS_CHILD or WS_VISIBLE , 800, 210, 100, 26, hwnd, BT_8, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = ln(x)"), WS_CHILD or WS_VISIBLE , 800, 210, 100, 26, hwnd, BT_8, hIns, NULL
     mov [hButton8], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = lg x"), WS_CHILD or WS_VISIBLE , 680, 250, 100, 26, hwnd, BT_9, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = lg(x)"), WS_CHILD or WS_VISIBLE , 680, 250, 100, 26, hwnd, BT_9, hIns, NULL
     mov [hButton9], rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = log2x"), WS_CHILD or WS_VISIBLE , 800, 250, 100, 26, hwnd, BT_10, hIns, NULL
+    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("y = log_2(x)"), WS_CHILD or WS_VISIBLE , 800, 250, 100, 26, hwnd, BT_10, hIns, NULL
     mov [hButton10], rax
     
-    COMMENT @
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("РќР°СЂРёСЃРѕРІР°С‚СЊ"), WS_CHILD or WS_VISIBLE , 800, 365, 100, 27, hwnd, BT_11, hIns, NULL
-    mov [hButton11], rax
-	@
-    
-    ;РїРѕР»СЏ РёРЅС‚РµСЂРІР°Р»Р°
+    ;поля интервала
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 720, 40, 60, 20, hwnd, ED_5 , hIns, NULL
 	mov hEdit1, rax
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 840, 40, 60, 20, hwnd, ED_6 , hIns, NULL
 	mov hEdit2, rax
-	
-	COMMENT @
-	;РїРѕР»Рµ РІРІРѕРґР° С„СѓРЅРєС†РёРё-РїРѕР»РёРЅРѕРјР°
-	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 680, 320, 220, 30, hwnd, ED_7 , hIns, NULL
-	mov hEdit3, rax
-	@
 
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_LEFT or ES_READONLY, 680, 610, 220, 30, hwnd, ED_8 , hIns, NULL
 	mov hEdit4, rax
            
 	ret
 CreateControlWindowsMain endp
-; Р РёСЃСѓРµС‚ РѕС‚СЂРµР·РѕРє РЅР° РєРѕРЅС‚РµРєСЃС‚Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР° СЃ СѓРєР°Р·Р°РЅРЅС‹РјРё РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё.
+; Рисует отрезок на контексте устройства с указанными координатами.
 ;
 DrawLine proc frame hdc:HDC, startX:dword, startY:dword, endX:dword, endY:dword
 
     local pen:HPEN
     
-    ; СЃРѕР·РґР°С‘Рј РѕР±СЉРµРєС‚ "РїРµСЂРѕ" РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ Р»РёРЅРёР№
+    ; создаём объект "перо" для рисования линий
     invoke CreatePen, 
-        PS_SOLID,       ; Р·Р°РґР°С‘Рј С‚РёРї Р»РёРЅРёРё (СЃРїР»РѕС€РЅР°СЏ)
-        1,              ; С‚РѕР»С‰РёРЅР° Р»РёРЅРёРё
-        0 + 0 shl 8 + 0 shl 16 ; С†РІРµС‚ Р»РёРЅРёРё
+        PS_SOLID,       ; задаём тип линии (сплошная)
+        1,              ; толщина линии
+        0 + 0 shl 8 + 0 shl 16 ; цвет линии
     mov [pen], rax
     
-    ; Р°СЃСЃРѕС†РёРёСЂСѓРµРј СЃРѕР·РґР°РЅРЅСѓСЋ РєРёСЃС‚СЊ СЃ РєРѕРЅС‚РµРєСЃС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІР°
+    ; ассоциируем созданную кисть с контекстом устройства
     invoke SelectObject, [hdc], [pen]
     
-    ; РїРµСЂРµРјРµС‰Р°РµРј С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ, СЃ РєРѕС‚РѕСЂРѕР№ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЂРёСЃРѕРІР°РЅРёРµ
+    ; перемещаем текущую позицию, с которой начинается рисование
     invoke MoveToEx,
-        [hdc],          ; РѕРїРёСЃР°С‚РµР»СЊ РєРѕРЅС‚РµРєСЃС‚Р° СѓСЃС‚СЂРѕР№СЃС‚РІР°
-        startX,         ; X-РєРѕРѕСЂРґРёРЅР°С‚Р°
-        startY,         ; Y-РєРѕРѕСЂРґРёРЅР°С‚Р°
+        [hdc],          ; описатель контекста устройства
+        startX,         ; X-координата
+        startY,         ; Y-координата
         NULL
         
-    ; СЂРёСЃСѓРµРј Р»РёРЅРёСЋ РІС‹Р±СЂР°РЅРЅРѕР№ РєРёСЃС‚СЊСЋ РѕС‚ С‚РµРєСѓС‰РµР№ РїРѕР·РёС†РёРё РґРѕ СѓРєР°Р·Р°РЅРЅРѕР№ С‚РѕС‡РєРё
+    ; рисуем линию выбранной кистью от текущей позиции до указанной точки
     invoke LineTo,
-        [hdc],          ; РѕРїРёСЃР°С‚РµР»СЊ РєРѕРЅС‚РµРєСЃС‚Р° СѓСЃС‚СЂРѕР№СЃС‚РІР°
-        endX,           ; X-РєРѕРѕСЂРґРёРЅР°С‚Р° РєРѕРЅРµС‡РЅРѕР№ С‚РѕС‡РєРё
-        endY            ; Y-РєРѕРѕСЂРґРёРЅР°С‚Р° РєРѕРЅРµС‡РЅРѕР№ С‚РѕС‡РєРё
+        [hdc],          ; описатель контекста устройства
+        endX,           ; X-координата конечной точки
+        endY            ; Y-координата конечной точки
 
-    ; СѓРґР°Р»СЏРµРј СЃРѕР·РґР°РЅРЅРѕРµ "РїРµСЂРѕ"
+    ; удаляем созданное "перо"
     invoke DeleteObject, pen
 
     ret
 DrawLine endp
 ;--------------------
-; Р РёСЃСѓРµС‚ РѕСЃСЊ Р°Р±СЃС†РёСЃСЃ.
+; Рисует ось абсцисс.
 DrawAbscissa proc frame hdc:HDC, field_ptr:ptr FieldState
 
 	local startX:dword
@@ -419,21 +383,22 @@ DrawAbscissa proc frame hdc:HDC, field_ptr:ptr FieldState
 	fistp [startY]
 	
 	fld [rsi].xStart
-	fld [rsi].AbsPart1 ;РѕС‚СЂРёС†Р°С‚РµР»СЊСЊРЅР°СЏ РїРѕР»СѓРѕСЃСЊ
+	fld [rsi].AbsPart1 ;отрицателььная полуось
 	fsubp st(1), st
 	fistp [startX]
 	
 	fld [rsi].xStart
-	fld [rsi].AbsPart ;РїРѕР»РѕР¶РёС‚РµР»СЊРЅР°СЏ РїРѕР»СѓРѕСЃСЊ
+	fld [rsi].AbsPart ;положительная полуось
 	faddp st(1), st
 	fistp [endX]
 	
 	
 
-  invoke DrawLine, [hdc], [startX], [startY], [endX], [startY]
+	invoke DrawLine, [hdc], [startX], [startY], [endX], [startY]
     ret
 DrawAbscissa endp
-; Р РёСЃСѓРµС‚ РѕСЃСЊ РѕСЂРґРёРЅР°С‚.
+
+; Рисует ось ординат.
 DrawOrdinate proc frame hdc:HDC, field_ptr:ptr FieldState
     local startY:dword
     local startX:dword	
@@ -447,12 +412,12 @@ DrawOrdinate proc frame hdc:HDC, field_ptr:ptr FieldState
 	fistp [startX]
 	
 	fld [rsi].yStart
-	fld [rsi].OrdPart1 ;РїРѕР»РѕР¶РёС‚РµР»СЊРЅР°СЏ РїРѕР»СѓРѕСЃСЊ
+	fld [rsi].OrdPart1 ;положительная полуось
 	fsubp st(1), st
 	fistp [startY]
 	
 	fld [rsi].yStart
-	fld [rsi].OrdPart ;РћРўР РР¦РђРўР•Р›Р¬РќРђРЇ РїРѕР»СѓРѕСЃСЊ
+	fld [rsi].OrdPart ;ОТРИЦАТЕЛЬНАЯ полуось
 	faddp st(1), st
 	fistp [endY]
 
@@ -461,7 +426,7 @@ DrawOrdinate proc frame hdc:HDC, field_ptr:ptr FieldState
 DrawOrdinate endp
 
 ;--------------------
-;	Р РёСЃРѕРІР°РЅРёРµ С„СѓРЅРєС†РёРё
+;	Рисование функции
 DrawFunctionXdegree proc hdc:HDC, field_ptr:ptr FieldState
 	local i:qword
 
@@ -478,7 +443,7 @@ DrawFunctionXdegree proc hdc:HDC, field_ptr:ptr FieldState
 	assume rsi:ptr FieldState
 	
 	
-	;РїРµСЂРµРіСЂСѓР¶Р°РµРј РїРµСЂРµРјРµРЅРЅС‹Рµ РёР· СЃС‚СЂСѓРєС‚СѓСЂС‹ РІ С‚РµРєСѓС‰РёРµ: РЅР°С‡Р°Р»Рѕ РєРѕРѕСЂРґРёРЅР°С‚,С‡РёСЃР»Рѕ С‚РѕС‡РµРє
+	;перегружаем переменные из структуры в текущие: начало координат,число точек
 	mov r10d, [rsi].xStart		
 	mov [startX], r10d
 	mov r10d, [rsi].yStart
@@ -490,68 +455,63 @@ DrawFunctionXdegree proc hdc:HDC, field_ptr:ptr FieldState
 	cycle:
 	
 		finit		
-		fld i			;Р·Р°РіСЂСѓР·РёР»Рё i
+		fld i			;загрузили i
 		fld oneth
 		fmul st, st(1) 
 		
-		fst [_arg]		;РІС‹РіСЂСѓР·РёР»Рё РїРѕР»СѓС‡РµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РІ Р°СЂРіСѓРјРµРЅС‚
-		
-		;lea eax, function	;Р·Р°РіСЂСѓР·РёР»Рё СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ,СѓРєР°Р·Р°РЅРЅСѓСЋ РІ Р°СЂРіСѓРјРµРЅС‚Р°С…
-		;assume eax:nothing
-		
+		fst [_arg]		;выгрузили полученное значение в аргумент
 		
 		lea rax, [rsi].function_ptr
 		assume rax:nothing
 
-		invoke (func ptr[rax]), [_arg]		;РІС‹Р·РІР°Р»Рё С„СѓРЅРєС†РёСЋ
-		;invoke sqx, [_arg]
-		fst [resfun]			;РІС‹РіСЂСѓР·РёР»Рё СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РёР· СЃС‚РµРєР° РІ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ		
+		invoke (func ptr[rax]), [_arg]		;вызвали функцию
+		fst [resfun]			;выгрузили результат функции из стека в локальную переменную		
 	
 		fld [_arg]
 		fld [startX]
 		fadd st, st(1)
-		fistp [temp]			;СЂРµР·СѓР»СЊС‚Р°С‚ СЃР»РѕР¶РµРЅРёСЏ СЃРјРµС‰РµРЅРёСЏ Рё С‚РµРєСѓС‰РµРіРѕ Р·РЅР°С‡РµРЅРёРµ РІ С‚РµРєСѓС‰СѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+		fistp [temp]			;результат сложения смещения и текущего значение в текущую переменную
 		
 		fld [startY]
 		fld [resfun]
-		fsubp st(1),st			; РІС‹С‡РёС‚Р°РЅРёРµ st(i) = st(i) - st(0)
-		fistp [temp1]			;СЂРµР·СѓР»СЊС‚Р°С‚ РІС‹С‡РёС‚Р°РЅРёСЏ РёР· СЃРјРµС‰РµРЅРёСЏ С‚РµРєСѓС‰РµРіРѕ Р·РЅР°С‡РµРЅРёСЏ РІ С‚РµРєСѓС‰СѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ1
+		fsubp st(1),st			; вычитание st(i) = st(i) - st(0)
+		fistp [temp1]			;результат вычитания из смещения текущего значения в текущую переменную1
 		
-		fld [startX]			;Р·Р°РіСЂСѓР¶Р°РµРј СЃРјРµС‰РµРЅРёРµ
-		fistp [startX]			;Р·Р°РїРѕРјРёРЅР°РµРј Рё РёР·РІР»РµРєР°РµРј РІ С†РµР»РѕРј С„РѕСЂРјР°С‚Рµ
+		fld [startX]			;загружаем смещение
+		fistp [startX]			;запоминаем и извлекаем в целом формате
 		
-		fld [startY]			;Р·Р°РіСЂСѓР¶Р°РµРј СЃРјРµС‰РµРЅРёРµ
-		fistp [startY]			;Р·Р°РїРѕРјРёРЅР°РµРј Рё РёР·РІР»РµРєР°РµРј РІ С†РµР»РѕРј С„РѕСЂРјР°С‚Рµ		
+		fld [startY]			;загружаем смещение
+		fistp [startY]			;запоминаем и извлекаем в целом формате		
 		
 		invoke DrawLine, [hdc], [startX], [startY], [temp], [temp1]
 		
-		fild [temp]				;Р·Р°РіСЂСѓР¶Р°РµРј temp РєР°Рє С†РµР»РѕРµ
-		fstp [temp]				;РІС‹РіСЂСѓР¶Р°РµРј РєР°Рє РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ
+		fild [temp]				;загружаем temp как целое
+		fstp [temp]				;выгружаем как вещественное
 		
 		mov r9d, [temp]
 		mov [startX], r9d
 		
-		fild [temp1]			;Р·Р°РіСЂСѓР¶Р°РµРј temp1 РєР°Рє С†РµР»РѕРµ
-		fstp [temp1]			;РІС‹РіСЂСѓР¶Р°РµРј РєР°Рє РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ
+		fild [temp1]			;загружаем temp1 как целое
+		fstp [temp1]			;выгружаем как вещественное
 		
 		mov r9d, [temp1]
 		mov [startY], r9d		
 		
-		fld i				;Р·Р°РіСЂСѓР·РёР»Рё i
-		fld1				;Р·Р°РіСЂСѓР·РёР»Рё РµРґРёРЅРёС†Сѓ
-		fadd st,st(1)		;РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°Р»Рё
-		fst i				;РІС‹РіСЂСѓР·РёР»Рё i
+		fld i				;загрузили i
+		fld1				;загрузили единицу
+		fadd st,st(1)		;инкрементировали
+		fst i				;выгрузили i
 		
 		fld [count]
-		fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jnc cycle				; РµСЃР»Рё  i РјРµРЅСЊС€Рµ result, С‚Рѕ РїРѕРІС‚РѕСЂСЏРµРј С†РёРєР»
+		fcom				;сравнение st(0) c st(1)
+		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+		sahf				;содержимое регистра AH переписываем в регистр флагов
+		jnc cycle				; если  i меньше result, то повторяем цикл
 		
 	mov rsi, field_ptr
 	assume rsi:ptr FieldState
 		
-	;							РїРµСЂРµРіСЂСѓР¶Р°РµРј РїРµСЂРµРјРµРЅРЅС‹Рµ РёР· СЃС‚СЂСѓРєС‚СѓСЂС‹ РІ С‚РµРєСѓС‰РёРµ: РЅР°С‡Р°Р»Рѕ РєРѕРѕСЂРґРёРЅР°С‚,С‡РёСЃР»Рѕ С‚РѕС‡РµРє
+	;							перегружаем переменные из структуры в текущие: начало координат,число точек
 	mov r10d, [rsi].xStart		
 	mov [startX], r10d
 	mov r10d, [rsi].yStart
@@ -563,67 +523,66 @@ DrawFunctionXdegree proc hdc:HDC, field_ptr:ptr FieldState
 	cycle1:
 	
 		finit		
-		fld i			;Р·Р°РіСЂСѓР·РёР»Рё i
+		fld i			;загрузили i
 		fld oneth
 		fmul st, st(1) 
 		
-		fst [_arg]		;РІС‹РіСЂСѓР·РёР»Рё РїРѕР»СѓС‡РµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РІ Р°СЂРіСѓРјРµРЅС‚
+		fst [_arg]		;выгрузили полученное значение в аргумент
 		
 		lea rax, [rsi].function_ptr
 		assume rax:nothing
 
-		invoke (func ptr[rax]), [_arg]		;РІС‹Р·РІР°Р»Рё С„СѓРЅРєС†РёСЋ
-		;invoke sqx, [_arg]
-		fst [resfun]			;РІС‹РіСЂСѓР·РёР»Рё СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РёР· СЃС‚РµРєР° РІ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ		
+		invoke (func ptr[rax]), [_arg]		;вызвали функцию
+		fst [resfun]			;выгрузили результат функции из стека в локальную переменную		
 		
 		fld [startX]
 		fld [_arg]
 		
 		fsubp st(1), st
-		fistp [temp]			;СЂРµР·СѓР»СЊС‚Р°С‚ СЃР»РѕР¶РµРЅРёСЏ СЃРјРµС‰РµРЅРёСЏ Рё С‚РµРєСѓС‰РµРіРѕ Р·РЅР°С‡РµРЅРёРµ РІ С‚РµРєСѓС‰СѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+		fistp [temp]			;результат сложения смещения и текущего значение в текущую переменную
 		
 		.if Field.for_ordinate == FO1
 			fld [startY]
 			fld [resfun]
-			fsubp st(1),st			; РІС‹С‡РёС‚Р°РЅРёРµ st(i) = st(i) - st(0)
-			fistp [temp1]			;СЂРµР·СѓР»СЊС‚Р°С‚ РІС‹С‡РёС‚Р°РЅРёСЏ РёР· СЃРјРµС‰РµРЅРёСЏ С‚РµРєСѓС‰РµРіРѕ Р·РЅР°С‡РµРЅРёСЏ РІ С‚РµРєСѓС‰СѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ1
+			fsubp st(1),st			; вычитание st(i) = st(i) - st(0)
+			fistp [temp1]			;результат вычитания из смещения текущего значения в текущую переменную1
 		.elseif Field.for_ordinate == FO2
 			fld [startY]
 			fld [resfun]
 			faddp st(1),st			
-			fistp [temp1]			;СЂРµР·СѓР»СЊС‚Р°С‚ РІС‹С‡РёС‚Р°РЅРёСЏ РёР· СЃРјРµС‰РµРЅРёСЏ С‚РµРєСѓС‰РµРіРѕ Р·РЅР°С‡РµРЅРёСЏ РІ С‚РµРєСѓС‰СѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ1
+			fistp [temp1]			;результат вычитания из смещения текущего значения в текущую переменную1
 		.endif
 		
-		fld [startX]			;Р·Р°РіСЂСѓР¶Р°РµРј СЃРјРµС‰РµРЅРёРµ
-		fistp [startX]			;Р·Р°РїРѕРјРёРЅР°РµРј Рё РёР·РІР»РµРєР°РµРј РІ С†РµР»РѕРј С„РѕСЂРјР°С‚Рµ
+		fld [startX]			;загружаем смещение
+		fistp [startX]			;запоминаем и извлекаем в целом формате
 		
-		fld [startY]			;Р·Р°РіСЂСѓР¶Р°РµРј СЃРјРµС‰РµРЅРёРµ
-		fistp [startY]			;Р·Р°РїРѕРјРёРЅР°РµРј Рё РёР·РІР»РµРєР°РµРј РІ С†РµР»РѕРј С„РѕСЂРјР°С‚Рµ		
+		fld [startY]			;загружаем смещение
+		fistp [startY]			;запоминаем и извлекаем в целом формате		
 		
 		invoke DrawLine, [hdc], [startX], [startY], [temp], [temp1]
 		
-		fild [temp]				;Р·Р°РіСЂСѓР¶Р°РµРј temp РєР°Рє С†РµР»РѕРµ
-		fst [temp]				;РІС‹РіСЂСѓР¶Р°РµРј РєР°Рє РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ
+		fild [temp]				;загружаем temp как целое
+		fst [temp]				;выгружаем как вещественное
 		
 		mov r9d, [temp]
 		mov [startX], r9d
 		
-		fild [temp1]			;Р·Р°РіСЂСѓР¶Р°РµРј temp1 РєР°Рє С†РµР»РѕРµ
-		fst [temp1]				;РІС‹РіСЂСѓР¶Р°РµРј РєР°Рє РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ
+		fild [temp1]			;загружаем temp1 как целое
+		fst [temp1]				;выгружаем как вещественное
 		
 		mov r9d, [temp1]
 		mov [startY], r9d		
 		
-		fld i				;Р·Р°РіСЂСѓР·РёР»Рё i
-		fld1				;Р·Р°РіСЂСѓР·РёР»Рё РµРґРёРЅРёС†Сѓ
-		fadd st,st(1)		;РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°Р»Рё
-		fst i				;РІС‹РіСЂСѓР·РёР»Рё i
+		fld i				;загрузили i
+		fld1				;загрузили единицу
+		fadd st,st(1)		;инкрементировали
+		fst i				;выгрузили i
 		
 		fld [count]
-		fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jnc cycle1				; РµСЃР»Рё  i РјРµРЅСЊС€Рµ result, С‚Рѕ РїРѕРІС‚РѕСЂСЏРµРј С†РёРєР»
+		fcom				;сравнение st(0) c st(1)
+		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+		sahf				;содержимое регистра AH переписываем в регистр флагов
+		jnc cycle1				; если  i меньше result, то повторяем цикл
 		
 	
 	
@@ -670,8 +629,8 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	local fif:dword
 	local six:dword
 	
-	mov [count], 600.	;С€РёСЂРёРЅР° РѕР±Р»Р°СЃС‚Рё РІ РїРёРєСЃРµР»СЏС…
-	mov [six], 630.		;С… РєРѕРѕСЂРґРёРЅР°С‚Р° РіСЂР°РЅРёС†С‹ РѕР±Р»Р°СЃС‚Рё
+	mov [count], 600.	;ширина области в пикселях
+	mov [six], 630.		;х координата границы области
 	mov [three], 30.	
 	mov [one], 10.		
 	mov [ed], 1.
@@ -688,7 +647,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		ret
 	.endif
 	
-	;РїРµСЂРµРіСЂСѓР¶Р°РµРј РёР· СЃС‚СЂСѓРєС‚СѓСЂС‹ РєРѕРѕСЂРґРёРЅР°С‚С‹ РёРЅС‚РµСЂРІР°Р»Р° РґР»СЏ Р·Р°РґР°РЅРёСЏ С„СѓРЅРєС†РёРё
+	;перегружаем из структуры координаты интервала для задания функции
 	xor r10, r10
 	mov r10d, [rsi].x0_cord
 	mov [x0], r10d
@@ -696,17 +655,15 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	mov r10d, [rsi].x1_cord
 	mov [x1], r10d
 	
-	;mov [x0], -2
-	;mov [x1], 2
 	
 	.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	
 		finit
 		fild [x0]
 		fldz
 		fcom 
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jnc oper				; РµСЃР»Рё  x0 РјРµРЅСЊС€Рµ 0
+		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+		sahf				;содержимое регистра AH переписываем в регистр флагов
+		jnc oper				; если  x0 меньше 0
 		jmp exit1
 		oper:
 		fldz 
@@ -714,7 +671,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		exit1:
 	.endif
 	
-	mov globalf, 0			; РЅР°РґРѕ
+	mov globalf, 0			; надо
 	
 	finit
 	invoke ZoomFunc, [x0], [x1]
@@ -725,19 +682,18 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	fild [x1]
 	fstp [b]
 	
-	;.if [rsi].function == SQX_ID || [rsi].function == CUBE_ID || [rsi].function == SIN_ID || [rsi].function == COS_ID || [rsi].function == TAN_ID || [rsi].function == CTAN_ID	|| [rsi].function == HYP_ID	|| [rsi].function == DEG_ID	|| [rsi].function == POLY_ID
-	; Р РђР‘РћРўРђ РЎ РРќРўР•Р Р’РђР›РћРњ
+	; РАБОТА С ИНТЕРВАЛОМ
 	finit
 	fld [a]
 	fld [b]
-	fsub st,st(1)		;РїРѕР»СѓС‡РёР»Рё РґР»РёРЅСѓ РІРІРµРґРµРЅРЅРѕРіРѕ РёРЅС‚РµСЂРІР°Р»Р°
+	fsub st,st(1)		;получили длину введенного интервала
 	fld [count]
-	fdiv st, st(1)		;РїРѕР»СѓС‡РёР»Рё РґР»РёРЅСѓ РµРґРёРЅРёС‡РЅРѕРіРѕ РѕС‚СЂРµР·РєР°
+	fdiv st, st(1)		;получили длину единичного отрезка
 	fstp [onepartx]
 	
 	fld [a]
 	fchs
-	fst [halfint]		;РґР»РёРЅР° РїРѕР»СѓРёРЅС‚РµСЂРІР°Р»Р° [a,0]
+	fst [halfint]		;длина полуинтервала [a,0]
 	fld [onepartx]
 	fmulp st(1), st
 	fld [one]
@@ -745,7 +701,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	fstp [rsi].AbsPart1
 	
 	fld [b]
-	fst [halfint1]		;РґР»РёРЅР° РїРѕР»СѓРёРЅС‚РµСЂРІР°Р»Р° [0,b]
+	fst [halfint1]		;длина полуинтервала [0,b]
 	fld [onepartx]
 	fmulp st(1), st
 	fld [one]
@@ -754,16 +710,10 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	
 	fld [halfint]
 	fld [onepartx]
-	fmulp st(1),st		;СѓРјРЅРѕР¶Р°РµРј РґР»РёРЅСѓ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРіРѕ РїРѕР»СѓРёРЅС‚РµСЂРІР°Р»Р° РЅР° РµРґРёРЅРёС‡РЅС‹Р№ РѕС‚СЂРµР·РѕРє, РїРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ С†РµРЅС‚СЂР° РѕСЃРµР№ РєРѕРѕСЂРґРёРЅР°С‚ РїРѕ РёРєСЃСѓ
+	fmulp st(1),st		;умножаем длину отрицательного полуинтервала на единичный отрезок, получаем координату центра осей координат по иксу
 	fld [three]
 	faddp st(1),st
 	fstp [rsi].xStart
-	;РљРћРќР•Р¦	
-	;.elseif [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	
-	;	mov [rsi].xStart, 30.
-	;	mov [rsi].AbsPart, 610.
-	;	mov [rsi].AbsPart1, 10.
-	;.endif
 	
 	
 	.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	
@@ -771,10 +721,10 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		finit	
 		fld [a]
 		fldz
-		fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jz l				; РµСЃР»Рё  a РјРµРЅСЊС€Рµ 0, С‚Рѕ
+		fcom				;сравнение st(0) c st(1)
+		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+		sahf				;содержимое регистра AH переписываем в регистр флагов
+		jz l				; если  a меньше 0, то
 		jmp exit2 
 		
 		l:	
@@ -785,183 +735,63 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		exit2:
 	.endif
 	
-	
-	
-	;finit
 	mov rsi, field_ptr
 	assume rsi:ptr FieldState	
 	lea rax, [rsi].function_ptr
 	assume rax:nothing
-	;РґР»СЏ С…^2-РїСЂРѕСЃС‚Рѕ СЃС‡РёС‚Р°РµРј Р·РЅР°С‡РµРЅРёРµ С„СѓРЅРєС†РёРё РІ РіСЂР°РЅРёС†Р°С… РёРЅС‚РµСЂРІР°Р»Р°
-	invoke (func ptr[rax]), [a]		;РІС‹Р·РІР°Р»Рё С„СѓРЅРєС†РёСЋ
-	fstp [fx0]			;РІС‹РіСЂСѓР·РёР»Рё СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РёР· СЃС‚РµРєР° РІ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+	;для х^2-просто считаем значение функции в границах интервала
+	invoke (func ptr[rax]), [a]		;вызвали функцию
+	fstp [fx0]			;выгрузили результат функции из стека в локальную переменную
 	
 	mov rsi, field_ptr
 	assume rsi:ptr FieldState	
 	lea rax, [rsi].function_ptr
 	assume rax:nothing
-	invoke (func ptr[rax]), [b]		;РІС‹Р·РІР°Р»Рё С„СѓРЅРєС†РёСЋ
-	fstp [fx1]			;РІС‹РіСЂСѓР·РёР»Рё СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РёР· СЃС‚РµРєР° РІ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+	invoke (func ptr[rax]), [b]		;вызвали функцию
+	fstp [fx1]			;выгрузили результат функции из стека в локальную переменную
 		
-	fld [fx0]		;fx0 - РјР°РєСЃРёРјСѓРј
+	fld [fx0]		;fx0 - максимум
 	fstp [_max]
 		
 	fld [fx0]
 	fld [fx1]
 	fcom
 	xor rax,rax
-	fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-	sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-	jnc dem				; РµСЃР»Рё  fx0 РјРµРЅСЊС€Рµ fx1
+	fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+	sahf				;содержимое регистра AH переписываем в регистр флагов
+	jnc dem				; если  fx0 меньше fx1
 	jmp demend
 	
 	dem:
-	fld [fx1]			; РµСЃР»Рё  fx0 РјРµРЅСЊС€Рµ fx1, С‚Рѕ fx1 -РјР°РєСЃРёРјСѓРј
-	fstp [_max]			;РјР°РєСЃРёРјСѓРј - РЅР°РёР±РѕР»СЊС€РµРµ РєРѕРѕСЂРґРёРЅР°С‚РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ С„СѓРЅРєС†РёРё РЅР° СѓРєР°Р·Р°РЅРЅРѕРј РѕС‚СЂРµР·РєРµ (РќР• РџРРљРЎР•Р›Р¬РќРћР•!)
+	fld [fx1]			; если  fx0 меньше fx1, то fx1 -максимум
+	fstp [_max]			;максимум - наибольшее координатное значение функции на указанном отрезке (НЕ ПИКСЕЛЬНОЕ!)
 	
 	demend:
-	.if [rsi].function == POLY_ID
-	
-		;fld a
-		mov rsi, field_ptr
-		assume rsi:ptr FieldState
-		lea rax, [rsi].function_ptr
-		assume rax:nothing
-		invoke (func ptr[rax]), [a]
-		fst [_min]
-		fst [_max]
-		
-		;РёС‰РµРј РјР°РєСЃРёРјСѓРј
-		mov [i], 0
-		start1:
-			finit
-			fld [i]
-			fld [offsetx]
-			fmulp st(1), st		;i*offset_x
-			fild [rsi].x0_cord
-			faddp st(1), st		;x0+i*offset_x
-			fstp [_arg]		;РїРѕР»СѓС‡РёР»Рё Р°СЂРіСѓРјРµРЅС‚ РґР»СЏ РІС‹Р·РѕРІР° С„СѓРЅРєС†РёРё
-			mov rsi, field_ptr
-			assume rsi:ptr FieldState
-			lea rax, [rsi].function_ptr
-			assume rax:nothing
-			invoke (func ptr[rax]), [_arg]	
-			;СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РЅР° РІРµСЂС€РёРЅРµ СЃС‚РµРєР°
-			
-			;РїСЂРѕРІРµСЂРєР° РЅР° РјР°РєСЃРёРјСѓРј
-			fstp [temp]
-			
-			fld [_max]
-			fld [temp]
-			fcom
-			fstsw ax
-			sahf
-			
-			jnc metka2
-			jmp enddeg2
-	metka2:
-			mov eax, [temp]
-			mov [_max], eax
-	enddeg2:
-			
-			fld [i]				;Р·Р°РіСЂСѓР·РёР»Рё i
-			fld1				;Р·Р°РіСЂСѓР·РёР»Рё РµРґРёРЅРёС†Сѓ
-			fadd st,st(1)		;РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°Р»Рё
-			fst [i]				;РІС‹РіСЂСѓР·РёР»Рё i
-
-			fld [count]
-			fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-			fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-			sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-			jnc start1			;РµСЃР»Рё i РјРµРЅСЊС€Рµ wid, С‚Рѕ РїРѕРІС‚РѕСЂСЏРµРј С†РёРєР»
-			
-		;РјРёРЅРёРјСѓРј
-		mov [i], 0
-	st12:
-		finit
-		fld [i]
-		fld [offsetx]
-		fmulp st(1), st		;i*offset_x
-		fild [rsi].x0_cord
-		faddp st(1), st		;x0+i*offset_x
-		fstp [_arg]		;РїРѕР»СѓС‡РёР»Рё Р°СЂРіСѓРјРµРЅС‚ РґР»СЏ РІС‹Р·РѕРІР° С„СѓРЅРєС†РёРё
-		mov rsi, field_ptr
-		assume rsi:ptr FieldState
-		lea rax, [rsi].function_ptr
-		assume rax:nothing
-		invoke (func ptr[rax]), [_arg]	
-		;СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РЅР° РІРµСЂС€РёРЅРµ СЃС‚РµРєР°
-		
-		;РїСЂРѕРІРµСЂРєР° РЅР° РјР°РєСЃРёРјСѓРј
-		fstp [temp]
-		
-		fld [_min]
-		fld [temp]
-		fcom
-		fstsw ax
-		sahf
-		
-		jc metka3
-		jmp enddeg3
-metka3:
-		mov eax, [temp]
-		mov [_min], eax
-enddeg3:
-		
-		fld [i]				;Р·Р°РіСЂСѓР·РёР»Рё i
-		fld1				;Р·Р°РіСЂСѓР·РёР»Рё РµРґРёРЅРёС†Сѓ
-		fadd st,st(1)		;РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°Р»Рё
-		fst [i]				;РІС‹РіСЂСѓР·РёР»Рё i
-
-		fld [count]
-		fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jnc st12			;РµСЃР»Рё i РјРµРЅСЊС€Рµ wid, С‚Рѕ РїРѕРІС‚РѕСЂСЏРµРј С†РёРєР»		
-		
-	
-	
-	.elseif [rsi].function == DEG_ID
-		mov rax, [for_degree]
-		xor rdx,rdx
-		mov rdi, 2
-		div rdi
-		.if rdx == 0
-			finit 
-			fldz
-			fstp [_min]		
-		.elseif rdx == 1
-			finit
-			fld [fx0]
-			fstp [_min]
-		.endif	
-	
-	.elseif [rsi].function == SQX_ID 	
+	.if [rsi].function == SQX_ID 	
 		fldz
-		fstp [_min] ;СЌС‚Рѕ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РїРѕСЂР°Р±РѕР»С‹ РѕС‚ РЅСѓР»СЏ РґРѕ РјР°РєСЃРёРјСѓРјР°!
-	.elseif [rsi].function == CUBE_ID		;РґР»СЏ РєСѓР±РёС‡РµСЃРєРѕР№ РїРѕСЂР°Р±РѕР»С‹
+		fstp [_min] ;это только в случае параболы от нуля до максимума!
+	.elseif [rsi].function == CUBE_ID		;для кубической параболы
 		fld [fx0]
 		fstp [_min]
-	.elseif [rsi].function == SIN_ID || [rsi].function == COS_ID		;РґР»СЏ СЃРёРЅСѓСЃР° Рё РєРѕСЃРёРЅСѓСЃР°
+	.elseif [rsi].function == SIN_ID || [rsi].function == COS_ID		;для синуса и косинуса
 		fld [ed]
 		fstp [_max]
 		fld [ed1]
 		fstp [_min]
-	.elseif [rsi].function == TAN_ID ||	[rsi].function == CTAN_ID || [rsi].function == HYP_ID		;РґР»СЏ С‚Р°РЅРіРµРЅСЃР°, РєРѕС‚Р°РЅРіРµРЅСЃР° Рё Р»РѕРіР°СЂРёС„РјР°
+	.elseif [rsi].function == TAN_ID ||	[rsi].function == CTAN_ID || [rsi].function == HYP_ID		;для тангенса, котангенса и логарифма
 		fld [hun]
 		fstp [_max]
 		fld [hun1]
 		fstp [_min]
-	.elseif [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	;РґР»СЏ Р»РѕРіР°СЂРёС„РјР°
+	.elseif [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	;для логарифма
 		fld [fx0]
-		fstp [_min]
-		;mov globalf, 1			; РєРѕСЃС‚С‹Р»РёС‰Рµ,С‡С‚РѕР±С‹ Р·Р°СЂР°Р±РѕС‚Р°Р» Р»РѕРіР°СЂРёС„Рј
+		fstp [_min]	
 	.endif
-	mov globalf, 1	
+	mov globalf, 1	; костылище,чтобы заработал логарифм
 	invoke ZoomFunc, [_min], [_max]
 	fstp [offsety]
 	
-	;Р РђР‘РћРўРђ РЎ РћРЎР¬Р® РЈ
+	;РАБОТА С ОСЬЮ У
 	
 	fld [_max]
 	fld [_min]
@@ -986,7 +816,7 @@ enddeg3:
 	fmulp st(1), st
 	fld [one]	
 	faddp st(1), st
-	fstp [rsi].OrdPart1	;РїРѕР»РѕР¶РґРёС‚РµР»СЊРЅР°СЏ РїРѕР»СѓРѕСЃСЊ
+	fstp [rsi].OrdPart1	;положительная полуось
 	
 	fld [_min]
 	fchs
@@ -994,10 +824,7 @@ enddeg3:
 	fmulp st(1), st
 	fld [one]	
 	faddp st(1), st
-	fstp [rsi].OrdPart ;РѕС‚СЂРёС†Р°С‚РµР»СЊРЅР°СЏ РїРѕР»СѓРѕСЃСЊ
-	
-	;РљРћРќР•Р¦
-	
+	fstp [rsi].OrdPart ;отрицательная полуось
 	
 	fild [x0]
 	fstp [x0v]
@@ -1013,7 +840,7 @@ enddeg3:
 		
 	
 	fld [x0v]
-	fld [offsetx]				;С‚РµРєСѓС‰РµРµ С…=(С…/offset_x)+330
+	fld [offsetx]				;текущее х=(х/offset_x)+330
 	fdivp st(1), st
 	fld [rsi].xStart
 	faddp st(1), st	
@@ -1030,23 +857,19 @@ enddeg3:
 	fstp [starty]
 	
 	mov [i], 0
-	;.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID 
-	;		fld1
-	;		fstp [i]
-	;.endif
 	
 	cycle:
 		finit
 		fld i
 		fld [offsetx]
-		fmulp st(1), st   ;i*offset_x
+		fmulp st(1), st	;i*offset_x
 		fld [x0v]
 		faddp st(1), st ; x0+i*offset_x
-		fstp [_arg]			;РїРѕР»СѓС‡РёР»Рё Р°СЂРіСѓРјРµРЅС‚ РґР»СЏ РІС‹Р·РѕРІР° С„СѓРЅРєС†РёРё
+		fstp [_arg]		;получили аргумент для вызова функции
 		lea rax, [rsi].function_ptr
 		assume rax:nothing
-		invoke (func ptr[rax]), [_arg]		;РІС‹Р·РІР°Р»Рё С„СѓРЅРєС†РёСЋ
-		fst [resfun]			;РІС‹РіСЂСѓР·РёР»Рё СЂРµР·СѓР»СЊС‚Р°С‚ С„СѓРЅРєС†РёРё РёР· СЃС‚РµРєР° РІ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+		invoke (func ptr[rax]), [_arg]		;вызвали функцию
+		fst [resfun]			;выгрузили результат функции из стека в локальную переменную
 		
 		fld [resfun]
 		fld [_min]
@@ -1086,300 +909,48 @@ enddeg3:
 		mov r9d, [endy]
 		mov [starty], r9d
 		
-		fld i				;Р·Р°РіСЂСѓР·РёР»Рё i
-		fld1				;Р·Р°РіСЂСѓР·РёР»Рё РµРґРёРЅРёС†Сѓ
-		fadd st,st(1)		;РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°Р»Рё
-		fst i				;РІС‹РіСЂСѓР·РёР»Рё i
+		fld i				;загрузили i
+		fld1				;загрузили единицу
+		fadd st,st(1)		;инкрементировали
+		fst i				;выгрузили i
 		
 		fld [count]
-		fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jnc cycle				; РµСЃР»Рё  i РјРµРЅСЊС€Рµ result, С‚Рѕ РїРѕРІС‚РѕСЂСЏРµРј С†РёРєР»
+		fcom				;сравнение st(0) c st(1)
+		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+		sahf				;содержимое регистра AH переписываем в регистр флагов
+		jnc cycle			; если  i меньше result, то повторяем цикл
 
 	ret
 DrawFunctionByPixel endp
 ;---------------------------------------------
-;РЎРѕРїСЂРѕС†РµСЃСЃРѕСЂРЅС‹Рµ С„СѓРЅРєС†РёРё Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРёС… РІС‹С‡РёСЃР»РµРЅРёР№
+;Сопроцессорные функции арифметических вычислений
 ;---------------------------------------------
-;Р¤СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРІР°РґСЂР°С‚Р° С‡РёСЃР»Р°
+;Функция вычисления квадрата числа
 sqx proc c x:qword
 			
-	finit					;РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР°
-	fld x					;Р·Р°РіСЂСѓР·РєР° РІРµС‰РµСЃС‚РІРµРЅРЅРѕРіРѕ С‡РёСЃР»Р° РёР· СЏС‡РµР№РєРё РїР°РјСЏС‚Рё x1 РІ st(0)
-	;fincstp
-	;fincstp
+	finit					;инициализация сопроцессора
+	fld x					;загрузка вещественного числа из ячейки памяти x1 в st(0)
 	fld x
-	
-	fmul st,st(1)			;СѓРјРЅРѕР¶РµРЅРёРµ СЃ Р·Р°РїРёСЃСЊСЋ СЂРµР·СѓР»СЊС‚Р°С‚Р° РІ st(0)
-	
-	fst x3					;Р·Р°РїРёСЃСЊ СЂРµР·СѓР»СЊС‚Р°С‚Р° РІ РіР»РѕР±Р°Р»СЊРЅСѓСЋ СЏС‡РµР№РєСѓ x3
-	;invoke crt_printf, addr format, x3
+
+	fmul st,st(1)			;умножение с записью результата в st(0)
 	
 	ret
 sqx endp 
-;Р¤СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РєСѓР±Р° С‡РёСЃР»Р°
+
+;Функция вычисления куба числа
 cube proc c x:qword
 			
-	finit					;РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР°
-	fld x					;Р·Р°РіСЂСѓР·РєР° РІРµС‰РµСЃС‚РІРµРЅРЅРѕРіРѕ С‡РёСЃР»Р° РёР· СЏС‡РµР№РєРё РїР°РјСЏС‚Рё x1 РІ st(0)
-	fld x	
-	fmul st,st(1)			;СѓРјРЅРѕР¶РµРЅРёРµ СЃ Р·Р°РїРёСЃСЊСЋ СЂРµР·СѓР»СЊС‚Р°С‚Р° РІ st(0)	
+	finit					;инициализация сопроцессора
+	fld x					;загрузка вещественного числа из ячейки памяти x1 в st(0)
 	fld x
-	fmul st,st(1)			;СѓРјРЅРѕР¶РµРЅРёРµ СЃ Р·Р°РїРёСЃСЊСЋ СЂРµР·СѓР»СЊС‚Р°С‚Р° РІ st(0)	
+	fmul st,st(1)			;умножение с записью результата в st(0)	
+	fld x
+	fmul st,st(1)			;умножение с записью результата в st(0)	
 
 	ret
-cube endp 
-;Р¤СѓРЅРєС†РёСЏ РІРѕР·РІРµРґРµРЅРёСЏ РІ СЃС‚РµРїРµРЅСЊ
-degree proc c x:qword;, y:qword
-	local temp1:qword
-	local temp2:qword
-	local temp3:qword
-	local res1:qword
-	local res2:qword
-	local res:qword
-	local flag:dword
-	local y:qword
-	
-	local tempx:qword
-	local sflag:dword
-	
-	;Р±С‹СЃС‚СЂС‹Р№ РІС‹С…РѕРґ: 0 РІ Р»СЋР±РѕР№ СЃС‚РµРїРµРЅРё = 0
-	.if x == 0
-		fldz
-		ret
-	.endif
-	
-	;СЂР°Р±РѕС‚Р°РµС‚ РІСЃРµРіРґР° СЃ С…>0. РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‡РµС‚РЅРѕСЃС‚Рё
-	;СЃС‚РµРїРµРЅРё РѕРїСЂРµРґРµР»СЏРµС‚ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°.
-	finit	
-	mov rax, for_degree
-	xor rdx,rdx
-	mov rdi, 2
-	div rdi
-	.if rdx == 0
-		
-		fld x
-		ftst
-		fstsw ax
-		sahf
-		jnc M1	;РµСЃР»Рё С… >= 0 РЅРµ РјРµРЅСЏРµРј РµРіРѕ Р·РЅР°Рє
+cube endp
 
-		fld x
-		fchs
-		fstp x
-M1:		
-		mov sflag, 0 ;РЅРµ РјРµРЅСЏС‚СЊ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°
-	.elseif rdx == 1
-		fld x
-		ftst
-		fstsw ax
-		sahf
-		jnc M2	;РµСЃР»Рё С… >= 0 РЅРµ РјРµРЅСЏРµРј РµРіРѕ Р·РЅР°Рє
-
-		fld x
-		fchs
-		fstp x
-		mov sflag, 1	;РїРѕРјРµРЅСЏС‚СЊ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°
-		jmp M3
-M2:		
-		mov sflag, 0		;РЅРµ РјРµРЅСЏС‚СЊ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°
-		
-M3:
-	.endif
-
-	mov rax, for_degree
-	mov y, rax
-	fild y
-	fstp y
-	mov flag, 0
-	
-	finit 
-	fld y				;Р·Р°РіСЂСѓР¶Р°РµРј РїРµСЂРµРјРµРЅРЅСѓСЋ Сѓ
-	fld x				;Р·Р°РіСЂСѓР¶Р°РµРј РїРµСЂРµРјРµРЅРЅСѓСЋ x
-		
-	fyl2x				;st(1) = st(1)*log2(st(0)), pop	
-	fstp temp1			;СЃРѕС…СЂР°РЅРёРј РІ СЏС‡РµР№РєСѓ temp1
-	
-	fld temp1 
-	frndint				;РѕРєСЂСѓРіР»РёР»Рё РґРѕ С†РµР»РѕРіРѕ
-	fstp temp2			;Р·Р°РіСЂСѓР·РёР»Рё С†РµР»РѕРµ РІ СЏС‡РµР№РєСѓ temp2
-
-	fld temp2
-	fld1				;Р·Р°РіСЂСѓР¶Р°РµРј РµРґРёРЅРёС†Сѓ,РїРѕС‚РѕРјСѓ С‡С‚Рѕ 1*2^(st(1))!!!!!!!
-	fscale				;РїРѕСЃС‡РёС‚Р°Р»Рё 2*n РґР»СЏ С†РµР»РѕР№ С‡Р°СЃС‚Рё
-	fstp res1
-	 
-	fld temp1			;РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ РїРѕР»РЅРѕРµ
-	fld temp2			;С†РµР»РѕРµ
-	fsub st,st(1)		;РІС‹С‡РёС‚Р°РµРј РёР· РїРѕР»РЅРѕРіРѕ С†РµР»РѕРµ
-	fst temp3
-	;st(0) = {}
-	
-	fldz				;Р·Р°РіСЂСѓР¶Р°РµРј РЅРѕР»СЊ
-	fcom				;СЃСЂР°РІРЅРёРІР°РµРј РѕСЃС‚Р°С‚РѕРє СЃ РЅСѓР»РµРј
-	fstsw ax			;РїРµСЂРµРЅРѕСЃРёРј С„Р»Р°РіРё СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІРѕ С„Р»Р°РіРё РїСЂРѕС†РµСЃСЃРѕСЂР° (СЂРµРіРёСЃС‚СЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ Р°С…)
-	sahf				;
-	jnc A				;РµСЃР»Рё РЎ=0 РїСЂС‹РіРЅСѓС‚СЊ РїРѕ РјРµС‚РєРµ Рђ
-	jmp E				;РёРЅР°С‡Рµ РїРµСЂРµРїСЂС‹РіРёРІР°РµРј С‡РµСЂРµР· Рђ СЃСЂР°Р·Сѓ РЅР° Р• Рё РїСЂРѕРґРѕР»Р¶Р°РµРј Р°Р»РіРѕСЂРёС‚Рј
-A:						;РµСЃР»Рё РґСЂРѕР±РЅС‹Р№ РѕСЃС‚Р°С‚РѕРє РјРµРЅСЊС€Рµ РЅСѓР»СЏ
-	fld temp3			;Р·Р°РіСЂСѓР¶Р°РµРј РµРіРѕ
-	fchs				;РјРµРЅСЏРµРј Р·РЅР°Рє
-	fst temp3			;РїРѕР»СѓС‡Р°РµРј РґСЂРѕР±РЅС‹Р№ РѕСЃС‚Р°С‚РѕРє
-	mov flag, 1			;СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р»Р°Рі РІ РµРґРёРЅРёС†Сѓ
-E:	
-	fld temp3			;РґР°Р»РµРµ-РІС‹РіСЂСѓР¶Р°РµРј РѕСЃС‚Р°С‚РѕРє
-	f2xm1				;РІРѕР·РІРѕРґРёРј РІ СЃС‚РµРїРµРЅСЊ
-	fld1				
-	fadd st,st(1)		;РїСЂРёР±Р°РІР»СЏРµРј РµРґРёРЅРёС†Сѓ (2^st-1)+1
-	fst res2			;Р·Р°РіСЂСѓР¶Р°РµРј РІС‚РѕСЂСѓСЋ С‡Р°СЃС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚Р°
-	
-	fld res1			;РІС‹РіСЂСѓР¶Р°РµРј РїРµСЂРІСѓСЋ
-	.if flag == 1		;РµСЃР»Рё Р±С‹Р»Р° РїРµСЂРµРјРµРЅР° Р·РЅР°РєР°
-		fmul st,st(1)	;СѓРјРЅРѕР¶Р°РµРј
-	.else
-		fdiv st,st(1)	;РёРЅР°С‡Рµ-РґРµР»РёРј
-	.endif
-		
-	.if sflag == 1
-		fst res1
-		fchs
-	.endif
-	
-	;С‚СѓС‚ РєРѕРЅС‡РёР»РёСЃСЊ СЂРµРіРёСЃС‚СЂС‹? РґР°, РїРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ СЂРµР·Р»СѓСЊС‚Р°С‚
-		fst res	
-		finit
-		fld  res	
-	;endtest
-
-	ret 
-degree endp
-
-;РЎС‚РµРїРµРЅСЊ x^y (РѕР±Р° РЅР° РІС…РѕРґ)
-degreey proc uses rax x:qword, y:qword
-	local temp1:qword
-	local temp2:qword
-	local temp3:qword
-	local res1:qword
-	local res2:qword
-	local res:dword
-	local flag:dword
-	local num:qword
-	local deg1:qword
-
-	local tempx:qword
-	local sflag:dword
-	
-	;Р±С‹СЃС‚СЂС‹Р№ РІС‹С…РѕРґ: 0 РІ Р»СЋР±РѕР№ СЃС‚РµРїРµРЅРё = 0
-	.if x == 0
-		fldz
-		ret
-	.endif
-
-	;СЂР°Р±РѕС‚Р°РµС‚ РІСЃРµРіРґР° СЃ С…>0. РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‡РµСЃС‚РЅРѕСЃС‚Рё
-	;СЃС‚РµРїРµРЅРё РѕРїСЂРµРґРµР»СЏРµС‚ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°.
-	finit
-	fld y
-	fistp deg1
-	mov rax, deg1
-	xor rdx, rdx
-	mov rdi, 2
-	div rdi
-	.if rdx == 0
-		
-		fld x
-		ftst
-		fstsw ax
-		sahf
-		jnc M1	;РµСЃР»Рё С… >= 0 РЅРµ РјРµРЅСЏРµРј РµРіРѕ Р·РЅР°Рє
-
-		fld x
-		fchs
-		fstp x
-M1:		
-		mov sflag, 0 ;РЅРµ РјРµРЅСЏС‚СЊ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°
-	.elseif rdx == 1
-		fld x
-		ftst
-		fstsw ax
-		sahf
-		jnc M2	;РµСЃР»Рё С… >= 0 РЅРµ РјРµРЅСЏРµРј РµРіРѕ Р·РЅР°Рє
-
-		fld x
-		fchs
-		fstp x
-		mov sflag, 1	;РїРѕРјРµРЅСЏС‚СЊ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°
-		jmp M3
-M2:		
-		mov sflag, 0		;РЅРµ РјРµРЅСЏС‚СЊ Р·РЅР°Рє СЂРµР·СѓР»СЊС‚Р°С‚Р°
-		
-M3:
-	.endif
-
-	mov flag, 0
-	
-	finit 
-	fld y				;Р·Р°РіСЂСѓР¶Р°РµРј РїРµСЂРµРјРµРЅРЅСѓСЋ Сѓ
-	fld x				;Р·Р°РіСЂСѓР¶Р°РµРј РїРµСЂРµРјРµРЅРЅСѓСЋ x
-		
-	fyl2x				;st(1) = st(1)*log2(st(0)), pop	
-	fstp temp1			;СЃРѕС…СЂР°РЅРёРј РІ СЏС‡РµР№РєСѓ temp1
-	
-	fld temp1 
-	frndint				;РѕРєСЂСѓРіР»РёР»Рё РґРѕ С†РµР»РѕРіРѕ
-	fstp temp2			;Р·Р°РіСЂСѓР·РёР»Рё С†РµР»РѕРµ РІ СЏС‡РµР№РєСѓ temp2
-
-	fld temp2
-	fld1				;Р·Р°РіСЂСѓР¶Р°РµРј РµРґРёРЅРёС†Сѓ,РїРѕС‚РѕРјСѓ С‡С‚Рѕ 1*2^(st(1))!!!!!!!
-	fscale				;РїРѕСЃС‡РёС‚Р°Р»Рё 2*n РґР»СЏ С†РµР»РѕР№ С‡Р°СЃС‚Рё
-	fstp res1
-	 
-	fld temp1			;РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ РїРѕР»РЅРѕРµ
-	fld temp2			;С†РµР»РѕРµ
-	fsub st,st(1)		;РІС‹С‡РёС‚Р°РµРј РёР· РїРѕР»РЅРѕРіРѕ С†РµР»РѕРµ
-	fst temp3
-	;st(0) = {}
-	
-	fldz				;Р·Р°РіСЂСѓР¶Р°РµРј РЅРѕР»СЊ
-	fcom				;СЃСЂР°РІРЅРёРІР°РµРј РѕСЃС‚Р°С‚РѕРє СЃ РЅСѓР»РµРј
-	fstsw ax			;РїРµСЂРµРЅРѕСЃРёРј С„Р»Р°РіРё СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІРѕ С„Р»Р°РіРё РїСЂРѕС†РµСЃСЃРѕСЂР° (СЂРµРіРёСЃС‚СЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ Р°С…)
-	sahf				;
-	jnc A				;РµСЃР»Рё РЎ=0 РїСЂС‹РіРЅСѓС‚СЊ РїРѕ РјРµС‚РєРµ Рђ
-	jmp E				;РёРЅР°С‡Рµ РїРµСЂРµРїСЂС‹РіРёРІР°РµРј С‡РµСЂРµР· Рђ СЃСЂР°Р·Сѓ РЅР° Р• Рё РїСЂРѕРґРѕР»Р¶Р°РµРј Р°Р»РіРѕСЂРёС‚Рј
-A:						;РµСЃР»Рё РґСЂРѕР±РЅС‹Р№ РѕСЃС‚Р°С‚РѕРє РјРµРЅСЊС€Рµ РЅСѓР»СЏ
-	fld temp3			;Р·Р°РіСЂСѓР¶Р°РµРј РµРіРѕ
-	fchs				;РјРµРЅСЏРµРј Р·РЅР°Рє
-	fst temp3			;РїРѕР»СѓС‡Р°РµРј РґСЂРѕР±РЅС‹Р№ РѕСЃС‚Р°С‚РѕРє
-	mov flag, 1			;СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р»Р°Рі РІ РµРґРёРЅРёС†Сѓ
-E:	
-	fld temp3			;РґР°Р»РµРµ-РІС‹РіСЂСѓР¶Р°РµРј РѕСЃС‚Р°С‚РѕРє
-	f2xm1				;РІРѕР·РІРѕРґРёРј РІ СЃС‚РµРїРµРЅСЊ
-	fld1				
-	fadd st,st(1)		;РїСЂРёР±Р°РІР»СЏРµРј РµРґРёРЅРёС†Сѓ (2^st-1)+1
-	fst res2			;Р·Р°РіСЂСѓР¶Р°РµРј РІС‚РѕСЂСѓСЋ С‡Р°СЃС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚Р°
-	
-	fld res1			;РІС‹РіСЂСѓР¶Р°РµРј РїРµСЂРІСѓСЋ
-	.if flag == 1		;РµСЃР»Рё Р±С‹Р»Р° РїРµСЂРµРјРµРЅР° Р·РЅР°РєР°
-		fmul st,st(1)	;СѓРјРЅРѕР¶Р°РµРј
-	.else
-		fdiv st,st(1)	;РёРЅР°С‡Рµ-РґРµР»РёРј
-	.endif
-
-	.if sflag == 1
-		fst res1
-		fchs
-	.endif
-
-	;С‚СѓС‚ РєРѕРЅС‡РёР»РёСЃСЊ СЂРµРіРёСЃС‚СЂС‹? РґР°, РїРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ СЂРµР·Р»СѓСЊС‚Р°С‚
-		fst num
-		finit
-		fld num
-	;endtest
-
-	ret 
-degreey endp
-
-;С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РѕР±СЂР°С‚РЅРѕ РїСЂРѕРїРѕСЂС†РёРѕРЅР°Р»СЊРЅРѕР№ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё
+;функция вычисления обратно пропорциональной зависимости
 hyperb proc c x:qword
 	finit
 	fld1
@@ -1389,7 +960,8 @@ hyperb proc c x:qword
 
 	ret
 hyperb endp
-;С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ СЃРёРЅСѓСЃР°
+
+;функция вычисления синуса
 sin_proc proc c x:qword
 
 	finit
@@ -1399,7 +971,8 @@ sin_proc proc c x:qword
 
 	ret
 sin_proc endp
-;С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕСЃРёРЅСѓСЃР°
+
+;функция вычисления косинуса
 cos_proc proc c x:qword
 	
 	finit
@@ -1409,9 +982,10 @@ cos_proc proc c x:qword
 
 	ret
 cos_proc endp
-;С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ Р»РѕРіР°СЂРёС„РјР° РїРѕ РѕСЃРЅРѕРІР°РЅРёСЋ 2
+
+;функция вычисления логарифма по основанию 2
 log2_proc proc c x:qword
-;Р»РѕРіР°СЂРёС„Рј РІС‹С‡РёСЃР»СЏРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РґР»СЏ С…>=0!!!!!!!!!!!!!!
+;логарифм вычисляется только для х>=0
 	finit 
 		
 	fld1
@@ -1420,6 +994,7 @@ log2_proc proc c x:qword
 
 	ret
 log2_proc endp
+
 lg_proc proc c x:qword
 	local temp:qword
 	finit
@@ -1431,6 +1006,7 @@ lg_proc proc c x:qword
 	
 	ret
 lg_proc endp
+
 ln_proc proc c x:qword
 	finit
 	invoke log2_proc, x
@@ -1441,17 +1017,18 @@ ln_proc proc c x:qword
 	ret
 ln_proc endp
 
-;С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ С‚Р°РЅРіРµРЅСЃР°
+;функция вычисления тангенса
 tan_proc proc c x:qword
 	local temp:qword
 	
 	finit 
 	fld x
 	fptan
-	fstp [temp] ; РјРѕР¶РЅРѕ Р·Р°РјРµРЅРёС‚СЊ РЅР° fincstp	
+	fstp [temp] ; можно заменить на fincstp	
 	ret
 tan_proc endp
-;С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕС‚Р°РЅРіРµРЅСЃР°
+
+;функция вычисления котангенса
 ctan_proc proc c x:qword
 	local res:qword
 	
@@ -1468,75 +1045,6 @@ ctan_proc proc c x:qword
 	ret
 ctan_proc endp
 
-ReturnPolynom proc c uses rsi x:qword
-	local i:qword
-	local currentdeg:qword
-	local currentcoof:dword
-	local currentsign:byte
-	local sum:qword
-	local res:qword
-	
-	
-	.if x == 0
-		fldz
-		ret
-	.endif
-	
-	mov sum, 0.
-	
-	finit
-	mov i, 0
-	.while i < 10
-		finit
-		mov rsi, i
-		imul rsi, 8
-		add rsi, degs				;СѓРєР°Р·Р°С‚РµР»СЊ
-		mov rsi, qword ptr [rsi]	;СЃС‚РµРїРµРЅСЊ
-		mov currentdeg, rsi
-		.if currentdeg == 0
-			.break
-		.endif
-		
-		mov rsi, i
-		imul rsi, 4
-		add rsi, coofs
-		mov esi, dword ptr [rsi]
-		mov currentcoof, esi
-		
-		mov rsi, i
-		add rsi, signs
-		mov al, byte ptr [rsi]
-		mov currentsign, al
-		
-		fild currentdeg
-		fstp currentdeg
-		invoke degreey, x, currentdeg
-		fstp res
-		
-		fild currentcoof
-		fld res
-		fmul st, st(1)
-		fstp res
-		
-		.if currentsign == -1
-			fld res
-			fchs
-			fstp res
-		.endif
-		
-		fld res
-		fld sum
-		fadd st, st(1)
-		fstp sum
-		
-		inc i
-	.endw
-
-	fld sum
-	
-	ret
-ReturnPolynom endp
-
 IntSum proc c a:qword, b:qword, function:qword
 	local i:qword
 	local sum:qword
@@ -1546,53 +1054,53 @@ IntSum proc c a:qword, b:qword, function:qword
 	local fun:qword
 	
 	
-	finit					;РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ 
+	finit					;инициализация 
 	fld [b]
 	fld [a]
 	
-	fsub st(1),st			; РІС‹С‡РёС‚Р°РЅРёРµ st(i) = st(i) - st(0)
+	fsub st(1),st			; вычитание st(i) = st(i) - st(0)
 	
 	fld thousand
 	fmul st,st(2)
-	fst result				;РџРѕР»СѓС‡РµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚Р° - СЃС‡РµС‚С‡РёРєР°
+	fst result				;Получение результата - счетчика
 
-	fldz					;РЅСѓР»СЊ
-	fst i					;РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ i РЅСѓР»РµРј
-	fst sum					;РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ sum РЅСѓР»РµРј
+	fldz					;нуль
+	fst i					;инициализация i нулем
+	fst sum					;инициализация sum нулем
 	finit
-	Cy:						;С†РёРєР»
+	Cy:						;цикл
 		finit
 		fld i
 		fld oneth
 		fmul st,st(1)
 		fld a
 		fadd st,st(1)
-		fst fun				;РїРѕСЃС‡РёС‚Р°Р»Рё Р°СЂРіСѓРјРµРЅС‚ РІС‹Р·С‹РІР°РµРјРѕР№ С„СѓРЅРєС†РёРё fun(a+i*0.001)
+		fst fun				;посчитали аргумент вызываемой функции fun(a+i*0.001)
 		
-		lea rax, function	;Р·Р°РіСЂСѓР·РёР»Рё СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ,СѓРєР°Р·Р°РЅРЅСѓСЋ РІ Р°СЂРіСѓРјРµРЅС‚Р°С…
+		lea rax, function	;загрузили указатель на функцию,указанную в аргументах
 		assume rax:nothing
 		
-		invoke (func ptr[rax]), fun		;РІС‹Р·РІР°Р»Рё С„СѓРЅРєС†РёСЋ
+		invoke (func ptr[rax]), fun		;вызвали функцию
 
 		fld oneth
-		fmul st,st(1)		;РїРѕСЃС‡РёС‚Р°Р»Рё РїР»РѕС‰Р°РґСЊ С„СЂР°РіРјРµРЅС‚Р°
+		fmul st,st(1)		;посчитали площадь фрагмента
 		
-		fld sum				;Р·Р°РіСЂСѓР·РёР»Рё РёРЅС‚РµРіСЂР°Р»СЊРЅСѓСЋ СЃСѓРјРјСѓ
-		fadd st, st(1)		;РїСЂРёР±Р°РІРёР»Рё
-		fst sum				;Р·Р°РїРёСЃР°Р»Рё РёРЅС‚РµРіСЂР°Р»СЊРЅСѓСЋ СЃСѓРјРјСѓ
+		fld sum				;загрузили интегральную сумму
+		fadd st, st(1)		;прибавили
+		fst sum				;записали интегральную сумму
 		
 		finit
 		
-		fld i				;Р·Р°РіСЂСѓР·РёР»Рё i
-		fld1				;Р·Р°РіСЂСѓР·РёР»Рё РµРґРёРЅРёС†Сѓ
-		fadd st,st(1)		;РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°Р»Рё
-		fst i				;РІС‹РіСЂСѓР·РёР»Рё i
+		fld i				;загрузили i
+		fld1				;загрузили единицу
+		fadd st,st(1)		;инкрементировали
+		fst i				;выгрузили i
 		
 		fld result 
-		fcom				;СЃСЂР°РІРЅРµРЅРёРµ st(0) c st(1)
-		fstsw ax			;РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° РІ AX 
-		sahf				;СЃРѕРґРµСЂР¶РёРјРѕРµ СЂРµРіРёСЃС‚СЂР° AH РїРµСЂРµРїРёСЃС‹РІР°РµРј РІ СЂРµРіРёСЃС‚СЂ С„Р»Р°РіРѕРІ
-		jnc Cy				; РµСЃР»Рё  i РјРµРЅСЊС€Рµ result, С‚Рѕ РїРѕРІС‚РѕСЂСЏРµРј С†РёРєР»
+		fcom				;сравнение st(0) c st(1)
+		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
+		sahf				;содержимое регистра AH переписываем в регистр флагов
+		jnc Cy				; если  i меньше result, то повторяем цикл
 		
 		fld sum
 		
@@ -1600,47 +1108,42 @@ IntSum proc c a:qword, b:qword, function:qword
 IntSum endp
 
 ;--------------------
-;Р¤РЈРќРљР¦РРЇ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РїРѕ РѕСЃРё
-ZoomFunc proc a:dword, b:dword;, field_ptr:ptr FieldState
+;ФУНКЦИЯ масштабирования по оси
+ZoomFunc proc a:dword, b:dword
 	local _a:qword
 	local _b:qword
 	local wid:qword
 	local temp:qword
 	local temp1:qword
 
-	;Р°СЂРіСѓРјРµРЅС‚С‹ РІ С„СѓРЅРєС†РёСЋ РїРѕСЃС‚СѓРїРёР»Рё С†РµР»С‹Рµ, РїРѕСЌС‚РѕРјСѓ РІС‹РїРѕР»РЅСЏРµРј РїСЂРёРІРµРґРµРЅРёРµ Рє РІРµС‰РµСЃС‚РІРµРЅРЅРѕРјСѓ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЋ
+	;аргументы в функцию поступили целые, поэтому выполняем приведение к вещественному представлению
 	
-		;.if Field.function == LOG2_ID
-			.if globalf == 1
-				fld [a]
-				fstp [_a]
-				fld [b]
-				fstp [_b]
-			.elseif globalf == 0
-				fild [a]
-				fstp [_a]
-				fild [b]
-				fstp [_b]
-			.endif
-		;.else 
-		;	fild [a]
-		;	fstp [_a]
-		;.endif
+	.if globalf == 1
+		fld [a]
+		fstp [_a]
+		fld [b]
+		fstp [_b]
+	.elseif globalf == 0
+		fild [a]
+		fstp [_a]
+		fild [b]
+		fstp [_b]
+	.endif
 	
 	
 
-	mov [wid], 600;РґР»РёРЅР° РѕР±Р»Р°СЃС‚Рё РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РіСЂР°С„РёРєР°
+	mov [wid], 600;длина области для рисования графика
 	finit 
 	fld [_a]
 	fld [_b]
 	fsub st,st(1)
-	fstp [temp];РїРѕР»СѓС‡РёР»Рё РґР»РёРЅСѓ РІРІРµРґРµРЅРЅРѕРіРѕ РѕС‚СЂРµР·РєР°
+	fstp [temp];получили длину введенного отрезка
 
 
 	fild [wid]
 	fld [temp]
 	fdiv st, st(1)
-	fst [temp1];РїРѕР»СѓС‡РёР»Рё РґРѕР»СЋ РѕРґРЅРѕРіРѕ РїРёРєСЃРµР»СЏ РІ РѕР±С‰РµР№ РґР»РёРЅРµ РѕС‚СЂРµР·РєР°
+	fst [temp1];получили долю одного пикселя в общей длине отрезка
 
 	ret
 ZoomFunc endp
@@ -1649,9 +1152,7 @@ InitFieldState proc frame ptr_field:ptr FieldState
 	mov rsi, ptr_field
 	assume rsi:ptr FieldState
 	
-	;mov for_degree, 5
 	mov Field.function, EMPTY_ID
-	;mov Field.function, LOG2_ID
 	mov Field.x0_cord, 0
 	mov Field.x1_cord, 0
 			
@@ -1678,12 +1179,12 @@ GetInterval proc field_ptr:ptr FieldState
 	assume rsi:ptr FieldState 
 	
 	xor rax, rax
-	invoke GetWindowTextLength, hEdit1		;РїРѕР»СѓС‡РёР»Рё РґР»РёРЅСѓ РІРІРµРґРµРЅРЅРѕР№ СЃС‚СЂРѕРєРё
-	mov [stringlen], eax					;Р·Р°РіСЂСѓР·РёР»Рё РµРµ РІ Р»РѕРєР°Р»РєСѓ РґР»СЏ РґР»РёРЅС‹
-	inc [stringlen]							;РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё
+	invoke GetWindowTextLength, hEdit1		;получили длину введенной строки
+	mov [stringlen], eax					;загрузили ее в локалку для длины
+	inc [stringlen]							;выделение памяти
 	invoke malloc, [stringlen]
 	mov [string], rax
-	invoke GetWindowText, hEdit1, [string], [stringlen]	;РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ
+	invoke GetWindowText, hEdit1, [string], [stringlen]	;получаем строку
 	
 	invoke atoi, string
 	mov [rsi].x0_cord, eax
@@ -1691,12 +1192,12 @@ GetInterval proc field_ptr:ptr FieldState
 	invoke free, string
 	
 	xor rax, rax
-	invoke GetWindowTextLength, hEdit2		;РїРѕР»СѓС‡РёР»Рё РґР»РёРЅСѓ РІРІРµРґРµРЅРЅРѕР№ СЃС‚СЂРѕРєРё
-	mov [stringlen], eax					;Р·Р°РіСЂСѓР·РёР»Рё РµРµ РІ Р»РѕРєР°Р»РєСѓ РґР»СЏ РґР»РёРЅС‹
-	inc [stringlen]							;РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё
+	invoke GetWindowTextLength, hEdit2		;получили длину введенной строки
+	mov [stringlen], eax					;загрузили ее в локалку для длины
+	inc [stringlen]							;выделение памяти
 	invoke malloc, [stringlen]
 	mov [string], rax
-	invoke GetWindowText, hEdit2, [string], [stringlen]	;РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ
+	invoke GetWindowText, hEdit2, [string], [stringlen]	;получаем строку
 	
 	invoke atoi, string
 	mov [rsi].x1_cord, eax
@@ -1705,199 +1206,6 @@ GetInterval proc field_ptr:ptr FieldState
 	
 	ret
 GetInterval endp
-
-
-COMMENT @
-GetPolynom proc field_ptr:ptr FieldState
-	local string:qword
-	local stringlen:dword
-	local i:qword
-	local x:qword
-	
-	mov rsi, field_ptr
-	assume rsi:ptr FieldState 
-	
-	xor rax, rax
-	invoke GetWindowTextLength, hEdit3		;РїРѕР»СѓС‡РёР»Рё РґР»РёРЅСѓ РІРІРµРґРµРЅРЅРѕР№ СЃС‚СЂРѕРєРё
-	mov [stringlen], eax					;Р·Р°РіСЂСѓР·РёР»Рё РµРµ РІ Р»РѕРєР°Р»РєСѓ РґР»СЏ РґР»РёРЅС‹
-	inc [stringlen]							;РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё
-	invoke malloc, [stringlen]
-	mov [string], rax
-	invoke GetWindowText, hEdit3, [string], [stringlen]	;РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ
-	
-	mov rax, string
-	xor rbx, rbx
-	mov bl, byte ptr [rax]
-	inc rax
-	mov bh, byte ptr [rax]
-	.if bl == 'x' && bh == '^'
-		inc rax
-		invoke atoi, rax
-		mov [for_degree], rax
-		
-		mov rax, [string]
-		add rax, 3
-		xor rbx, rbx
-		mov bh, byte ptr [rax]
-		.if bh != '+' && bh != '-'		
-			.if [for_degree] !=0 
-				mov rax, [for_degree]
-				xor rdx, rdx
-				mov rdi, 2
-				div rdi
-				.if rdx == 0
-					mov [rsi].xStart, 330.
-					mov [rsi].yStart, 630.
-					mov [rsi].AbsPart, 300.
-					mov [rsi].AbsPart, 300.
-					mov [rsi].OrdPart, 10.
-					mov [rsi].OrdPart1, 300.
-				.elseif rdx == 1
-					invoke InitFieldState, rsi
-				.endif
-
-				lea rax, degree
-				mov [rsi].function_ptr, rax
-				mov [rsi].function, DEG_ID
-				
-				invoke free, string	
-				ret
-			.endif
-		.endif
-	.endif
-	
-	;РјРЅРѕРіРѕС‡Р»РµРЅ
-	invoke malloc, 80		;8*10  10 qword
-	mov [degs], rax
-	invoke malloc, 10		;10 Р±Р°Р№С‚
-	mov [signs], rax
-	invoke malloc, 40		;10*4 10 dword
-	mov [coofs], rax
-	
-	;РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ РµРґРёРЅРёС†Р°РјРё Р·РЅР°РєРё, РµРґРёРЅРёС†Р°РјРё РєРѕСЌС„С„РёС†РёРµРЅС‚С‹, РЅСѓР»СЏРјРё СЃС‚РµРїРµРЅРё
-	mov i, 0
-	.while i < 10
-		mov rsi, i
-		add rsi, signs
-		mov byte ptr [rsi], 1
-		
-		mov rsi, i
-		imul rsi, 4
-		add rsi, coofs
-		mov dword ptr [rsi], 1
-		
-		mov rsi, i
-		imul rsi, 8
-		add rsi, degs
-		mov qword ptr [rsi], 0
-	
-		inc i
-	.endw
-	
-	mov rsi, field_ptr
-	assume rsi:ptr FieldState 
-	
-	mov rdi, string
-	xor rbx, rbx
-	xor rcx, rcx
-	.if byte ptr [rdi] == '-'
-		mov rsi, signs
-		mov byte ptr [rsi], -1
-		
-		inc rdi
-	.endif
-	invoke atoi, rdi
-	mov rsi, coofs
-	mov dword ptr [rsi], eax	;РєРѕСЌС„С„
-	inc rdi
-	mov bl, byte ptr [rdi]
-	inc rdi
-	mov bh, byte ptr [rdi]
-	
-	.if bl == 'x' && bh == '^'
-		inc rdi
-		invoke atoi, rdi
-		mov rsi, degs
-		mov qword ptr [rsi], rax
-		
-		mov rdx, field_ptr
-		assume rdx:ptr FieldState 
-		mov [rdx].function, POLY_ID
-		lea rsi, ReturnPolynom
-		mov [rdx].function_ptr, rsi
-		
-		mov [rdx].xStart, 330.
-		mov [rdx].yStart, 630.
-		mov [rdx].AbsPart, 300.
-		mov [rdx].AbsPart, 300.
-		mov [rdx].OrdPart, 300.
-		mov [rdx].OrdPart1, 300.
-		
-		inc rdi
-		mov i, 0
-		.while i < 10
-			xor rbx, rbx
-			xor rcx, rcx
-			mov bl, byte ptr [rdi]	;Р·РЅР°Рє
-			
-			inc rdi
-			invoke atoi, rdi
-			mov rsi, i
-			inc rsi
-			imul rsi, 4
-			add rsi, coofs
-			mov dword ptr [rsi], eax	;РєРѕСЌС„С„
-			
-			inc rdi
-			mov bh, byte ptr [rdi]	;РІСЃРµРіРґР° С…
-			
-			inc rdi
-			mov cl, byte ptr [rdi]  ;РЅР°С‡Р°Р»Рѕ СЃС‚РµРїРµРЅРё
-			.if bh == 'x' && cl == '^'
-				.if bl == '-'
-					mov rsi, i
-					inc rsi
-					add rsi, signs
-					mov byte ptr [rsi], -1
-				.elseif bl == '+'
-					mov rsi, i
-					inc rsi
-					add rsi, signs
-					mov byte ptr [rsi], 1
-				.endif
-				
-				inc rdi
-				invoke atoi, rdi
-				mov rsi, i
-				inc rsi
-				imul rsi, 8
-				add rsi, degs
-				mov qword ptr [rsi], rax	;СЃС‚РµРїРµРЅСЊ
-			
-			.endif
-			
-			inc rdi
-			.if  byte ptr [rdi] != '-' && byte ptr [rdi] != '+'
-				;.break
-				ret
-			.endif
-			
-			inc i
-		.endw
-	.endif
-	
-	;С‚РµСЃС‚ С„СѓРЅРєС†РёРё polynom
-	mov x, 2
-	fild x
-	fstp x
-	invoke ReturnPolynom, x
-	fistp x
-	
-	invoke InitFieldState, rsi
-	invoke free, string	
-	ret
-GetPolynom endp
-@
 
 GetIntSum proc frame field_ptr:ptr FieldState
 	local string:qword
@@ -1937,16 +1245,16 @@ GetIntSum endp
 ;--------------------
 
 ;
-; Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№ РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР° РїСЂРёР»РѕР¶РµРЅРёСЏ.
-; Р’С‹Р·С‹РІР°РµС‚СЃСЏ СЃРёСЃС‚РµРјРѕР№ РїСЂРё РїРѕСЃС‚СѓРїР»РµРЅРёРё СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°
-; СЃ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРјРё РїР°СЂР°РјРµС‚СЂР°РјРё.
+; Функция обработки сообщений главного окна приложения.
+; Вызывается системой при поступлении сообщения для главного окна
+; с соответствующими параметрами.
 ;
-; РђРіСЂСѓРјРµРЅС‚С‹:
+; Агрументы:
 ;
-; hwnd      РѕРїРёСЃР°С‚РµР»СЊ РѕРєРЅР°, РїРѕР»СѓС‡РёРІС€РµРіРѕ СЃРѕРѕР±С‰РµРЅРёРµ
-; iMsg      РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ (РЅРѕРјРµСЂ) СЃРѕРѕР±С‰РµРЅРёСЏ
-; wParam    РїР°СЂР°РјРµС‚СЂ СЃРѕРѕР±С‰РµРЅРёСЏ
-; lParam    РїР°СЂР°РјРµС‚СЂ СЃРѕРѕР±С‰РµРЅРёСЏ
+; hwnd      описатель окна, получившего сообщение
+; iMsg      идентификатор (номер) сообщения
+; wParam    параметр сообщения
+; lParam    параметр сообщения
 ;
 WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 
@@ -1962,44 +1270,41 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 	
 	mov [smth], 0
 
-    ;and esp, 0FFFFFFF0h
-
     .if [iMsg] == WM_CREATE
-        ; СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
+        ; создание окна
         invoke CreateControlWindowsMain, hwnd
 		invoke InitFieldState, addr Field
-		;invoke GetIntSum, addr Field
 		
         xor rax, rax
         ret
         
     .elseif [iMsg] == WM_DESTROY
-        ; СѓРЅРёС‡С‚РѕР¶РµРЅРёРµ РѕРєРЅР°
+        ; уничтожение окна
         
         invoke PostQuitMessage, 0
         xor rax, rax
         ret
         
     .elseif [iMsg] == WM_SIZE
-        ; РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂР°
+        ; изменение размера
         
     .elseif [iMsg] == WM_SETFOCUS
-        ; РїРѕР»СѓС‡РµРЅРёРµ С„РѕРєСѓСЃР°
+        ; получение фокуса
         
     .elseif [iMsg] == WM_CLOSE
-        ; Р·Р°РєСЂС‹С‚РёРµ РѕРєРЅР°
+        ; закрытие окна
         
     .elseif [iMsg] == WM_QUIT
-        ; Р·Р°РІРµСЂС€РµРЅРёРµ РїСЂРёР»РѕР¶РµРЅРёСЏ
+        ; завершение приложения
         
     .elseif [iMsg] == WM_KEYDOWN
-        ;РЅР°Р¶Р°РЅРёРµ РєР»Р°РІРёС€Рё
+        ;нажание клавиши
         
         .if wParam == VK_SHIFT
         .endif
         
     .elseif [iMsg] == WM_CHAR
-        ; РІРІРѕРґ СЃ РєР»Р°РІРёР°С‚СѓСЂС‹
+        ; ввод с клавиатуры
         
     .elseif [iMsg] == WM_COMMAND
 
@@ -2074,65 +1379,54 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 			mov Field.function_ptr, rax
 			invoke GetIntSum, addr Field
 			invoke InvalidateRect, hwnd, NULL, TRUE
-		COMMENT @
-		.elseif eax == BT_11	
-			invoke GetInterval, addr Field
-			invoke GetPolynom, addr Field
-			invoke GetIntSum, addr Field
-			invoke InvalidateRect, hwnd, NULL, TRUE
-		@
 		.endif
         ret
         
     .elseif [iMsg] == WM_PAINT
-        ; РїРµСЂРµСЂРёСЃРѕРІРєР° РѕРєРЅР°
+        ; перерисовка окна
         
-        ; РїРѕР»СѓС‡Р°РµРј РєРѕРЅС‚РµРєСЃС‚ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+        ; получаем контекст устройства
         invoke BeginPaint, HwndMainWindow, addr ps
         mov [hdc], rax
         
-        ; СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С†РІРµС‚ С‚РµРєСЃС‚Р°
+        ; установить цвет текста
         invoke SetTextColor, [hdc], 255 + (255 shl 8) + (255 shl 16)
         
        
         
-        ; СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С†РІРµС‚ С„РѕРЅР° С‚РµРєСЃС‚Р°
+        ; установить цвет фона текста
         invoke SetBkColor, [hdc], 0 + (0 shl 8) + (0 shl 16)
         
        
         
-        ;СЃРѕР·РґР°РµРј РєРёСЃС‚Рё РЅСѓР¶РЅРѕРіРѕ С†РІРµС‚Р°
+        ;создаем кисти нужного цвета
 		mov [color_brush], 255 + 255 shl 8 + 255 shl 16
         invoke CreateSolidBrush, [color_brush]
         mov [white_brush], rax
         
-        ;СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±РµР»СѓСЋ РєРёСЃС‚СЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+        ;устанавливаем белую кисть по умолчанию
         invoke SelectObject, [hdc], white_brush           
         
         invoke Rectangle, [hdc], 20, 20, 640, 640  
         
-         ; РІС‹РІРѕРґ С‚РµРєСЃС‚Р° РЅР° РєРѕРЅС‚РµРєСЃС‚ СѓСЃС‚СЂРѕР№СЃС‚РІР°
-        invoke TextOut, [hdc], 680, 20, $CTA0("Р’РІРµРґРёС‚Рµ РёРЅС‚РµСЂРІР°Р»:"), 17
+         ; вывод текста на контекст устройства
+        invoke TextOut, [hdc], 680, 20, $CTA0("Введите интервал:"), 17
         invoke TextOut, [hdc], 680, 45, $CTA0("A:"), 2
 		invoke TextOut, [hdc], 800, 45, $CTA0("B:"), 2
-		invoke TextOut, [hdc], 680, 65, $CTA0("Р’С‹Р±РµСЂРёС‚Рµ С„СѓРЅРєС†РёСЋ...:"), 20
-		; invoke TextOut, [hdc], 680, 300, $CTA0("РР»Рё РІРІРµРґРёС‚Рµ РјРЅРѕРіРѕС‡Р»РµРЅ:"), 25
-		invoke TextOut, [hdc], 680, 580, $CTA0("Р—РЅР°С‡РµРЅРёРµ РёРЅС‚РµРіСЂР°Р»Р°:"), 19
-        ;lea rax, Field
+		invoke TextOut, [hdc], 680, 65, $CTA0("Выберите функцию...:"), 20
+		invoke TextOut, [hdc], 680, 580, $CTA0("Значение интеграла:"), 19
+
 		invoke DrawFunctionByPixel, [hdc], addr Field
         
-        .if Field.function == EMPTY_ID || Field.function == CUBE_ID || Field.function == SIN_ID || Field.function == COS_ID || Field.function == TAN_ID || Field.function == CTAN_ID || Field.function == HYP_ID || Field.function == DEG_ID || Field.function == POLY_ID; || LOG2_ID || Field.function == LG_ID || Field.function == LN_ID || Field.function == SQX_ID
-			invoke DrawAbscissa, [hdc], addr Field ;20, 330, 640
-			invoke DrawOrdinate, [hdc], addr Field ;330, 640, 20
-		.elseif Field.function == SQX_ID
-			invoke DrawAbscissa, [hdc], addr Field ;20, 630, 640
-			invoke DrawOrdinate, [hdc], addr Field ;330, 640, 20
-		.elseif Field.function == LOG2_ID || 	Field.function == LG_ID || Field.function == LN_ID
-			invoke DrawAbscissa, [hdc], addr Field ;20, 330, 640
-			invoke DrawOrdinate, [hdc], addr Field  ;30, 640, 20
+        .if Field.function == EMPTY_ID || Field.function == CUBE_ID || Field.function == SIN_ID \
+		|| Field.function == COS_ID || Field.function == TAN_ID || Field.function == CTAN_ID \
+		|| Field.function == HYP_ID || Field.function == SQX_ID \
+		|| Field.function == LOG2_ID || Field.function == LG_ID || Field.function == LN_ID
+			invoke DrawAbscissa, [hdc], addr Field
+			invoke DrawOrdinate, [hdc], addr Field
         .endif
                 
-        ; Р·Р°РІРµСЂС€РµРЅРёРµ РїРµСЂРµСЂРёСЃРѕРІРєРё
+        ; завершение перерисовки
         invoke EndPaint, [hwnd], addr ps
         
         xor rax, rax
@@ -2142,8 +1436,8 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
         
     .endif
     
-    ; РќРµРѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ РЅР°РїСЂР°РІР»СЏСЋС‚СЃСЏ РІ С„СѓРЅРєС†РёСЋ
-    ; РѕР±СЂР°Р±РѕС‚РєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.
+    ; Необработанные сообщения направляются в функцию
+    ; обработки по умолчанию.
     invoke DefWindowProc, hwnd, iMsg, wParam, lParam
     ret
 WndProcMain endp
