@@ -26,7 +26,7 @@ FieldState struct
 	
 	x0_cord			dword ?		;интервал для действий с функцией
 	x1_cord			dword ?
-	y				dword ?		;для x^y
+	y				real8 ?		;для x^y
 
 FieldState ends
 
@@ -85,21 +85,21 @@ unary_function	typedef proto c:qword
 
 binary_function typedef proto c:qword, :qword
 
-exp				proto c x:qword, y:qword
+exp				proto c x:real8, y:real8
 
-sin				proto c x:qword
+sin				proto c x:real8
 
-cos				proto c x:qword
+cos				proto c x:real8
 
-log2			proto c x:qword
+log2			proto c x:real8
 
-lg				proto c x:qword
+lg				proto c x:real8
 
-ln				proto c x:qword
+ln				proto c x:real8
 
-tg				proto c x:qword
+tg				proto c x:real8
 
-ctg				proto c x:qword
+ctg				proto c x:real8
 
 IntSum proto c a:qword, b:qword, function:qword
 
@@ -244,31 +244,31 @@ CreateMainWindow endp
 CreateControlWindowsMain proc  hwnd:HWND
 	  
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("x^"), WS_CHILD or WS_VISIBLE, 680, 90, 20, 26, hwnd, BT_EXP, hIns, NULL
-    mov [hButtonEXP], rax
+    mov hButtonEXP, rax
 
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_LEFT, 700, 90, 80, 26, hwnd, ED_EXP , hIns, NULL
 	mov hEditExp, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("sin(x)"), WS_CHILD or WS_VISIBLE , 800, 90, 100, 26, hwnd, BT_SIN, hIns, NULL
-    mov [hButtonSIN], rax
+    mov hButtonSIN, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("cos(x)"), WS_CHILD or WS_VISIBLE , 680, 130, 100, 26, hwnd, BT_COS, hIns, NULL
-    mov [hButtonCOS], rax
+    mov hButtonCOS, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("tg(x)"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_TG, hIns, NULL
-    mov [hButtonTG], rax
+    mov hButtonTG, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("ctg(x)"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_CTG, hIns, NULL
-    mov [hButtonCTG], rax
+    mov hButtonCTG, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("ln(x)"), WS_CHILD or WS_VISIBLE , 800, 170, 100, 26, hwnd, BT_LN, hIns, NULL
-    mov [hButtonLN], rax
+    mov hButtonLN, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("lg(x)"), WS_CHILD or WS_VISIBLE , 680, 210, 100, 26, hwnd, BT_LG, hIns, NULL
-    mov [hButtonLG], rax
+    mov hButtonLG, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("log_2(x)"), WS_CHILD or WS_VISIBLE , 800, 210, 100, 26, hwnd, BT_LOG2, hIns, NULL
-    mov [hButtonLOG2], rax
+    mov hButtonLOG2, rax
     
 	invoke CreateWindowEx, WS_EX_CLIENTEDGE, $CTA0("edit"), NULL, WS_CHILD or WS_VISIBLE or ES_RIGHT, 720, 40, 60, 20, hwnd, ED_INT_A , hIns, NULL
 	mov hEditIntA, rax
@@ -429,9 +429,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		finit
 		fild [x0]
 		fldz
-		fcom 
-		fstsw ax
-		sahf
+		fcomi st, st(1) 
 		.if !CARRY? ; если  x0 меньше 0
 			fldz 
 			fistp [x0]
@@ -488,9 +486,7 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		finit	
 		fld [a]
 		fldz
-		fcom			;сравнение st(0) c st(1)
-		fstsw ax		;переписываем содержимое регистра состояния сопроцессора в AX 
-		sahf			;содержимое регистра AH переписываем в регистр флагов
+		fcomi st, st(1)
 		.if ZERO?		; если  a меньше 0, то
 			fld [a]
 			fld [offsetx]
@@ -500,25 +496,32 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 	.endif
 
 	lea rax, [rsi].function_ptr
-	invoke (unary_function ptr[rax]), [a]		;вызвали функцию
-	fstp [fx0]									;выгрузили результат функции из стека в локальную переменную
+	.if Field.function != EXP_ID
+		invoke (unary_function ptr[rax]), [a]		
+	.else
+		invoke (binary_function ptr[rax]), [a], Field.y
+	.endif
+	fstp [fx0]
 	
 	lea rax, [rsi].function_ptr
-	invoke (unary_function ptr[rax]), [b]		;вызвали функцию
-	fstp [fx1]									;выгрузили результат функции из стека в локальную переменную
+	.if Field.function != EXP_ID
+		invoke (unary_function ptr[rax]), [b]		
+	.else
+		invoke (binary_function ptr[rax]), [b], Field.y
+	.endif
+	fstp [fx1]		
 		
 	fld [fx0]			;fx0 - максимум
 	fstp [_max]
 		
 	fld [fx0]
 	fld [fx1]
-	fcom
-	fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
-	sahf				;содержимое регистра AH переписываем в регистр флагов
+	fcomi st, st(1)
 	.if !CARRY?
 		fld [fx1]		; если  fx0 меньше fx1, то fx1 -максимум
 		fstp [_max]		;максимум - наибольшее координатное значение функции на указанном отрезке (НЕ ПИКСЕЛЬНОЕ!)
 	.endif
+	
 	COMMENT @
 	.if [rsi].function == SQX_ID 	
 		fldz
@@ -619,8 +622,14 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		faddp st(1), st ; x0+i*offset_x
 		fstp [_arg]		;получили аргумент для вызова функции
 		lea rax, [rsi].function_ptr
-		invoke (unary_function ptr[rax]), [_arg]		;вызвали функцию
-		fst [resfun]			;выгрузили результат функции из стека в локальную переменную
+
+		.if Field.function != EXP_ID
+			invoke (unary_function ptr[rax]), _arg
+		.else
+			invoke (binary_function ptr[rax]), _arg, Field.y
+		.endif
+
+		fst [resfun]
 		
 		fld [resfun]
 		fld [_min]
@@ -662,14 +671,11 @@ DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
 		
 		fld i
 		fld1
-		fadd st,st(1)		;инкрементировали i
+		fadd st,st(1)
 		fst i				
 		
 		fld [count]
-		fcom				;сравнение st(0) c st(1)
-		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
-		sahf				;содержимое регистра AH переписываем в регистр флагов
-							; если  i меньше result, то повторяем цикл
+		fcomi st, st(1)
 	.endw
 	ret
 DrawFunctionByPixel endp
@@ -677,7 +683,7 @@ DrawFunctionByPixel endp
 ;Сопроцессорные функции арифметических вычислений
 ;---------------------------------------------
 ;функция вычисления синуса
-sin proc c x:qword
+sin proc c x:real8
 	finit
 	fld x
 	fsin
@@ -685,7 +691,7 @@ sin proc c x:qword
 sin endp
 
 ;функция вычисления косинуса
-cos proc c x:qword
+cos proc c x:real8
 	finit
 	fld x
 	fcos
@@ -693,8 +699,8 @@ cos proc c x:qword
 cos endp
 
 ;функция вычисления логарифма по основанию 2
-log2 proc c x:qword
-;логарифм вычисляется только для х>=0
+log2 proc c x:real8
+	;логарифм вычисляется только для х>=0
 	finit 
 	fld1
 	fld x
@@ -702,7 +708,7 @@ log2 proc c x:qword
 	ret
 log2 endp
 
-lg proc c x:qword
+lg proc c x:real8
 	finit
 	invoke log2, x
 	fldl2t
@@ -711,7 +717,7 @@ lg proc c x:qword
 	ret
 lg endp
 
-ln proc c x:qword
+ln proc c x:real8
 	finit
 	invoke log2, x
 	fldln2
@@ -721,7 +727,7 @@ ln proc c x:qword
 ln endp
 
 ;функция вычисления тангенса
-tg proc c x:qword
+tg proc c x:real8
 	finit 
 	fld x
 	fptan
@@ -730,7 +736,7 @@ tg proc c x:qword
 tg endp
 
 ;функция вычисления котангенса
-ctg proc c x:qword
+ctg proc c x:real8
 	finit
 	invoke tg, x
 	fld1
@@ -738,30 +744,45 @@ ctg proc c x:qword
 	ret
 ctg endp
 
-;функция возведения в степень
-exp proc c x:qword, y:qword
+;функция возведения в степень x^y
+exp proc c x:real8, y:real8
+    local change_x_sign:dword
+    local change_res_sign:dword
+    mov eax, 1
+    mov [change_x_sign], eax
 
-	finit
-	.if y == 0
-		fld1
-		ret
-	.endif
-	
-	.if x >= 0
-		fld y
-		fld x
-		fyl2x
-		fld     st
-		frndint
-		fsub    st(1),st
-		fxch    st(1)
-		f2xm1
-		fld1
-		fadd
-		fscale
-		fstp    st(1)
-	.endif
-	ret
+    finit
+    fldz
+    fld x
+    fcomi st, st(1)
+    .if CARRY?
+        neg [change_x_sign] ;устанавливаем флаг -1, если x<0
+    .endif
+
+    fld y
+    fist [change_res_sign]
+    and [change_res_sign], 1
+    .if [change_x_sign] == -1 && [change_res_sign] == 1
+        neg [change_res_sign] ;если x<0 и степень нечётна, меняем в конце знак результата
+    .endif
+    fld x
+    .if [change_x_sign] == -1
+        fchs
+    .endif
+    fyl2x
+    fld     st
+    frndint
+    fsub    st(1),st
+    fxch    st(1)
+    f2xm1
+    fld1
+    fadd
+    fscale
+    fstp    st(1)
+    .if [change_res_sign] == -1
+        fchs
+    .endif
+    ret     
 
 exp endp
 
@@ -773,19 +794,19 @@ IntSum proc c a:qword, b:qword, function:qword
 	local arg:qword
 	
 	
-	finit					;инициализация 
+	finit
 	fld [b]
 	fld [a]
 	
-	fsub st(1),st			; вычитание st(i) = st(i) - st(0)
+	fsub st(1),st
 	
 	fld thousand
 	fmul st,st(2)
 	fst result				;Получение результата - счетчика
 
-	fldz					;нуль
-	fst i					;инициализация i нулем
-	fst sum					;инициализация sum нулем
+	fldz					
+	fst i
+	fst sum
 	finit
 	.while !CARRY?
 		finit
@@ -797,9 +818,12 @@ IntSum proc c a:qword, b:qword, function:qword
 		fst arg				;посчитали аргумент вызываемой функции arg(a+i*0.001)
 		
 		lea rax, function	;загрузили указатель на функцию,указанную в аргументах
-		assume rax:nothing
 		
-		invoke (unary_function ptr[rax]), arg		;вызвали функцию
+		.if Field.function != EXP_ID
+			invoke (unary_function ptr[rax]), arg
+		.else
+			invoke (binary_function ptr[rax]), arg, Field.y
+		.endif
 
 		fld thousandth
 		fmul st,st(1)		;посчитали площадь фрагмента
@@ -810,16 +834,14 @@ IntSum proc c a:qword, b:qword, function:qword
 		
 		finit
 		
-		fld i				;загрузили i
-		fld1				;загрузили единицу
-		fadd st,st(1)		;инкрементировали
-		fst i				;выгрузили i
+		fld i
+		fld1
+		fadd st,st(1)
+		fst i
 		
 		fld result 
-		fcom				;сравнение st(0) c st(1)
-		fstsw ax			;переписываем содержимое регистра состояния сопроцессора в AX 
-		sahf				;содержимое регистра AH переписываем в регистр флагов
-							; если  i меньше result, то повторяем цикл
+		fcomi st, st(1)
+		; если  i меньше result, то повторяем цикл
 	.endw
 	fld sum
 		
@@ -849,18 +871,18 @@ ZoomFunc proc a:dword, b:dword
 		fstp [_b]
 	.endif
 
-	mov [wid], 600;длина области для рисования графика
+	mov [wid], 600	;длина области для рисования графика
 	finit 
 	fld [_a]
 	fld [_b]
 	fsub st,st(1)
-	fstp [temp];получили длину введенного отрезка
+	fstp [temp]		;получили длину введенного отрезка
 
 
 	fild [wid]
 	fld [temp]
 	fdiv st, st(1)
-	fst [temp1];получили долю одного пикселя в общей длине отрезка
+	fst [temp1]		;получили долю одного пикселя в общей длине отрезка
 
 	ret
 ZoomFunc endp
@@ -1020,8 +1042,12 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 		pop rbx
         .if ebx == BT_EXP
 			mov Field.function, EXP_ID
+			xor rax, rax
 			invoke GetIntFromWindowText, hEditExp
-			mov Field.y, eax
+			finit
+			mov Field.y, rax
+			fild Field.y
+			fstp Field.y
 			lea rax, exp
 		.elseif ebx == BT_SIN	
 			mov Field.function, SIN_ID
@@ -1079,7 +1105,7 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
         invoke Rectangle, [hdc], 20, 20, 640, 640  
         
          ; вывод текста на контекст устройства
-        invoke TextOut, [hdc], 680, 20, $CTA0("Enter interval:"), 17
+        invoke TextOut, [hdc], 680, 20, $CTA0("Enter interval"), 17
         invoke TextOut, [hdc], 680, 45, $CTA0("A:"), 2
 		invoke TextOut, [hdc], 800, 45, $CTA0("B:"), 2
 		invoke TextOut, [hdc], 680, 65, $CTA0("Choose function:"), 20
