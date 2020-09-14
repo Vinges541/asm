@@ -10,25 +10,19 @@ include string.inc
 include stdlib.inc
 include Strings.mac
 
-FieldState struct 
-	xStart			dword ?		;начало координат по иксу
-	yStart			dword ?		;начало координат по игреку
-	
-	OrdNeg			dword ?		;длина полуординаты
-	OrdPos			dword ?		;	
-	AbsPos			dword ?		;длина полуабсциссы
-	AbsNeg			dword ?		;
+field struct
+	start_coord		dword ?
+	end_coord		dword ?
+	center_coord	dword ?
 
-	function		dword ?		;идентификатор функции
+	a				dword ?
+	b				dword ?
+	function		dword ?
 	function_ptr	qword ?
 
-	count			dword ?		;количество точек
-	
-	x0_cord			dword ?		;интервал для действий с функцией
-	x1_cord			dword ?
 	y				real8 ?		;для x^y
 
-FieldState ends
+field ends
 
 AppWindowName	equ <"Graphics">
 
@@ -65,25 +59,25 @@ CreateMainWindow proto
 
 DrawLine proto hdc:HDC, startX:dword, startY:dword, endX:dword, endY:dword
 
-DrawAxis proto hdc:HDC, field_ptr:ptr FieldState
+DrawAxis proto hdc:HDC, field_ptr:ptr field
 
-DrawFunctionByPixel proto hdc:HDC, field_ptr:ptr FieldState
+DrawFunctionByPixel proto hdc:HDC, field_ptr:ptr field
 
 ZoomFunc	proto a:dword, b:dword
 
-GetInterval proto field_ptr:ptr FieldState
+GetInterval proto field_ptr:ptr field
 
-GetIntSum	proto field_ptr:ptr FieldState
+GetIntSum	proto field_ptr:ptr field
 
 WndProcMain proto hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 
 CreateControlWindowsMain proto hwnd:HWND
 
-InitFieldState	proto ptr_field:ptr FieldState
+InitFieldState	proto ptr_field:ptr field
 
-unary_function	typedef proto c:qword
+unary_function	typedef proto c:real8
 
-binary_function typedef proto c:qword, :qword
+binary_function typedef proto c:real8, :real8
 
 exp				proto c x:real8, y:real8
 
@@ -101,16 +95,16 @@ tg				proto c x:real8
 
 ctg				proto c x:real8
 
-IntSum proto c a:qword, b:qword, function:qword
+IntSum proto c a:real8, b:real8, function:qword
 
 ;----------------------------------------
 
 .data
-thousandth		qword		0.001
-thousand		qword		1000.0
+thousandth		real8		0.001
+thousand		real8		1000.0
 
 .data?
-Field			FieldState	<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>
+Field			field		<>
 hButtonEXP		HWND		?
 hButtonSIN		HWND		?
 hButtonCOS		HWND		?
@@ -119,8 +113,6 @@ hButtonCTG		HWND		?
 hButtonLN		HWND		?
 hButtonLG		HWND		?
 hButtonLOG2		HWND		?
-
-globalf			qword		?
 
 hIns			HINSTANCE	?
 
@@ -255,11 +247,11 @@ CreateControlWindowsMain proc  hwnd:HWND
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("cos(x)"), WS_CHILD or WS_VISIBLE , 680, 130, 100, 26, hwnd, BT_COS, hIns, NULL
     mov hButtonCOS, rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("tg(x)"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_TG, hIns, NULL
-    mov hButtonTG, rax
+    ;invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("tg(x)"), WS_CHILD or WS_VISIBLE , 800, 130, 100, 26, hwnd, BT_TG, hIns, NULL
+    ;mov hButtonTG, rax
     
-    invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("ctg(x)"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_CTG, hIns, NULL
-    mov hButtonCTG, rax
+    ;invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("ctg(x)"), WS_CHILD or WS_VISIBLE , 680, 170, 100, 26, hwnd, BT_CTG, hIns, NULL
+    ;mov hButtonCTG, rax
     
     invoke CreateWindowEx, 0, $CTA0("button"), $CTA0("ln(x)"), WS_CHILD or WS_VISIBLE , 800, 170, 100, 26, hwnd, BT_LN, hIns, NULL
     mov hButtonLN, rax
@@ -317,389 +309,142 @@ DrawLine proc frame hdc:HDC, startX:dword, startY:dword, endX:dword, endY:dword
 DrawLine endp
 ;--------------------
 ; Рисует оси.
-DrawAxis proc frame hdc:HDC, field_ptr:ptr FieldState
-
-	local startX:	dword
-	local startY:	dword
-	local endX:		dword
-	local endY:		dword
+DrawAxis proc frame hdc:HDC, field_ptr:ptr field
 
 	mov rsi, field_ptr
-	assume rsi:ptr FieldState 
+	assume rsi:ptr field 
 	
-	finit
-	;ось абсцисс
-	fld [rsi].yStart
-	fistp [startY]
-	
-	fld [rsi].xStart
-	fld [rsi].AbsNeg ;отрицательная полуось
-	fsubp st(1), st
-	fistp [startX]
-	
-	fld [rsi].xStart
-	fld [rsi].AbsPos ;положительная полуось
-	faddp st(1), st
-	fistp [endX]
-	
-	invoke DrawLine, [hdc], [startX], [startY], [endX], [startY]
-
-	;ось ординат
-	fld [rsi].xStart
-	fistp [startX]
-	
-	fld [rsi].yStart
-	fld [rsi].OrdPos
-	fsubp st(1), st
-	fistp [startY]
-	
-	fld [rsi].yStart
-	fld [rsi].OrdNeg
-	faddp st(1), st
-	fistp [endY]
-
-	invoke DrawLine, [hdc], [startX], [startY], [startX], [endY]
+	invoke DrawLine, [hdc], [rsi].start_coord, [rsi].center_coord, [rsi].end_coord, [rsi].center_coord
+	invoke DrawLine, [hdc], [rsi].center_coord, [rsi].start_coord, [rsi].center_coord, [rsi].end_coord
 
     ret
 DrawAxis endp
 
-DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr FieldState
-	local i:		qword
-	local _arg:		qword
-	local resfun:	qword
-	local resfun1:	dword
-	local x0:		dword
-	local x0v:		qword
-	local x1:		dword
-	local x1v:		dword
-	local fx1:		qword
-	local fx0:		qword
-	local _max:		dword
-	local _min:		dword
-	local offsetx:	qword
-	local offsety:	qword
-	local a:		qword
-	local b:		qword
+DrawFunctionByPixel proc hdc:HDC, field_ptr:ptr field
 	
-	local count:	dword
-	local temp:		dword
-	local onepartx:	qword
-	local oneparty:	qword
-	local halfint:	dword
-	local halfint1:	dword
-	
-	local startx:	dword
-	local starty:	dword
-	local endx:		dword
-	local endy:		dword
-	local three:	dword
-	local one:		dword
-	
-	local ed:		dword
-	local ed1:		dword
-	local hun:		dword
-	local hun1:		dword
-	local six:		dword
-	
-	mov [count],	600.	;ширина области в пикселях
-	mov [six],		630.	;х координата границы области
-	mov [three],	30.	
-	mov [one],		10.		
-	mov [ed],		1.
-	mov [ed1],		-1.
-	mov [hun],		10.
-	mov [hun1],		-10.
-	
-	
+	local count:		dword
+	local global_x:		dword
+	local global_y:		dword
+
+	local prev_local_x:	dword
+	local prev_local_y:	dword
+	local local_x:		dword
+	local local_y:		dword
+	local unit_interval:dword
+	local arg:			real8
+	local invalid_coord:dword
+
 	mov rsi, field_ptr
-	assume rsi:ptr FieldState
+	assume rsi:ptr field
+
+	mov eax, [rsi].end_coord
+	inc eax
+	mov invalid_coord, eax
+
+	mov unit_interval,	10
+	mov prev_local_x,	0
+	mov prev_local_y,	0
+
 	
 	.if [rsi].function == EMPTY_ID
 		ret
 	.endif
-	
-	;перегружаем из структуры координаты интервала для задания функции
-	mov r10d,	[rsi].x0_cord
-	mov [x0],	r10d
-	mov r10d,	[rsi].x1_cord
-	mov [x1],	r10d
-	
-	
-	.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	
-		finit
-		fild [x0]
-		fldz
-		fcomi st, st(1) 
-		.if !CARRY? ; если  x0 меньше 0
-			fldz 
-			fistp [x0]
-		.endif
-	.endif
-	
-	mov globalf, 0	; надо
-	
-	finit
-	invoke ZoomFunc, [x0], [x1]
-	fstp [offsetx]
-		
-	fild [x0]
-	fstp [a]
-	fild [x1]
-	fstp [b]
-	
-	; РАБОТА С ИНТЕРВАЛОМ
-	finit
-	fld [a]
-	fld [b]
-	fsub st,st(1)		;получили длину введенного интервала
-	fld [count]
-	fdiv st, st(1)		;получили длину единичного отрезка
-	fstp [onepartx]
-	
-	fld [a]
-	fchs
-	fst [halfint]		;длина полуинтервала [a,0]
-	fld [onepartx]
-	fmulp st(1), st
-	fld [one]
-	faddp st(1), st
-	fstp [rsi].AbsNeg
-	
-	fld [b]
-	fst [halfint1]		;длина полуинтервала [0,b]
-	fld [onepartx]
-	fmulp st(1), st
-	fld [one]
-	faddp st(1), st
-	fstp [rsi].AbsPos
-	
-	fld [halfint]
-	fld [onepartx]
-	fmulp st(1),st		;умножаем длину отрицательного полуинтервала на единичный отрезок, получаем координату центра осей координат по иксу
-	fld [three]
-	faddp st(1),st
-	fstp [rsi].xStart
-	
-	
-	.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	
-			
-		finit	
-		fld [a]
-		fldz
-		fcomi st, st(1)
-		.if ZERO?		; если  a меньше 0, то
-			fld [a]
-			fld [offsetx]
-			faddp st(1), st
-			fst [a]
-		.endif
-	.endif
 
-	lea rax, [rsi].function_ptr
-	.if Field.function != EXP_ID
-		invoke (unary_function ptr[rax]), [a]		
-	.else
-		invoke (binary_function ptr[rax]), [a], Field.y
-	.endif
-	fstp [fx0]
+	mov eax, [rsi].end_coord
+	sub eax, [rsi].start_coord
+	xor edx, edx
+	idiv unit_interval
+	mov count, eax
+
+	sar eax, 1
+	neg eax
+	mov global_x, eax
+
+	finit
+DrawFunctionByPixel_main_loop:
+	
+	mov ebx, global_x
+
+	mov eax, ebx
+	imul unit_interval
+	cmp edx, 0
+	add eax, [rsi].center_coord
+	mov local_x, eax
 	
 	lea rax, [rsi].function_ptr
+	mov arg, rbx
+	fild dword ptr [arg]
+	fstp arg
 	.if Field.function != EXP_ID
-		invoke (unary_function ptr[rax]), [b]		
+		invoke (unary_function ptr[rax]), arg
 	.else
-		invoke (binary_function ptr[rax]), [b], Field.y
+		;cmp global_x, 0
+		;je DrawFunctionByPixel_main_loop_iter
+		invoke (binary_function ptr[rax]), arg, Field.y
 	.endif
-	fstp [fx1]		
-		
-	fld [fx0]			;fx0 - максимум
-	fstp [_max]
-		
-	fld [fx0]
-	fld [fx1]
-	fcomi st, st(1)
-	.if !CARRY?
-		fld [fx1]		; если  fx0 меньше fx1, то fx1 -максимум
-		fstp [_max]		;максимум - наибольшее координатное значение функции на указанном отрезке (НЕ ПИКСЕЛЬНОЕ!)
-	.endif
+	fist global_y
+	fild unit_interval
+	fmul st, st(1)
+	fist local_y
+	neg local_y
+	mov eax, local_y
+	add eax, [rsi].center_coord
+	cmp eax, [rsi].start_coord
+	jl DrawFunctionByPixel_beyond_edge
+	mov local_y, eax
+	jmp DrawFunctionByPixel_main_loop_iter
 	
-	COMMENT @
-	.if [rsi].function == SQX_ID 	
-		fldz
-		fstp [_min] ;это только в случае параболы от нуля до максимума!
-	.elseif [rsi].function == CUBE_ID || 
-	@
-	.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID
-		fld [fx0]
-		fstp [_min]
-	.elseif [rsi].function == SIN_ID || [rsi].function == COS_ID
-		fld [ed]
-		fstp [_max]
-		fld [ed1]
-		fstp [_min]
-	.elseif [rsi].function == TG_ID ||	[rsi].function == CTG_ID ;|| [rsi].function == HYP_ID
-		fld [hun]
-		fstp [_max]
-		fld [hun1]
-		fstp [_min]
-	.endif
-	mov globalf, 1	; костылище,чтобы заработал логарифм
-	invoke ZoomFunc, [_min], [_max]
-	fstp [offsety]
+DrawFunctionByPixel_beyond_edge:
+	mov eax, invalid_coord
+	mov local_y, eax
 	
-	;РАБОТА С ОСЬЮ У
+DrawFunctionByPixel_main_loop_iter:
 	
-	fld [_max]
-	fld [_min]
-	fsubp st(1), st
-	fld [count]
-	fdiv st, st(1)
-	fstp [oneparty]
-	
-	
-	fld [_max]
-	fstp [halfint1]
-	
-	fld [halfint1]
-	fld [oneparty]
-	fmulp st(1), st
-	fld [three]
-	faddp st(1), st
-	fstp [rsi].yStart
-	
-	fld [halfint1]
-	fld [oneparty]
-	fmulp st(1), st
-	fld [one]	
-	faddp st(1), st
-	fstp [rsi].OrdPos	;положительная полуось
-	
-	fld [_min]
-	fchs
-	fld [oneparty]
-	fmulp st(1), st
-	fld [one]	
-	faddp st(1), st
-	fstp [rsi].OrdNeg	;отрицательная полуось
-	
-	fild [x0]
-	fstp [x0v]
-	
-	.if [rsi].function == LOG2_ID || [rsi].function == LG_ID || [rsi].function == LN_ID	
-	
-		fld [x0v]
-		fld [offsetx]
-		faddp st(1), st
-		fstp [x0v]
-		
-	.endif
-		
-	
-	fld [x0v]
-	fld [offsetx]				;текущее х=(х/offset_x)+330
-	fdivp st(1), st
-	fld [rsi].xStart
-	faddp st(1), st	
-	fstp [startx]
-	
-		
-	fld [fx0] 
-	fld [_min]	
-	fsubp st(1), st
-	fld [offsety]
-	fdivp st(1),st
-	fld [six]
-	fsub st, st(1)
-	fstp [starty]
-	
-	mov [i], 0
-	clc
-	.while !CARRY?
-		finit
-		fld i
-		fld [offsetx]
-		fmulp st(1), st	;i*offset_x
-		fld [x0v]
-		faddp st(1), st ; x0+i*offset_x
-		fstp [_arg]		;получили аргумент для вызова функции
-		lea rax, [rsi].function_ptr
+	mov r8d, prev_local_x
+	mov r9d, prev_local_y
+	mov r10d, local_x
+	mov r11d, local_y
 
-		.if Field.function != EXP_ID
-			invoke (unary_function ptr[rax]), _arg
-		.else
-			invoke (binary_function ptr[rax]), _arg, Field.y
-		.endif
+	.if r11d != invalid_coord && r9d != 0 && r8d != 0
+		invoke DrawLine, hdc, r8d, r9d, r10d, r11d
+	.endif
 
-		fst [resfun]
-		
-		fld [resfun]
-		fld [_min]
-		fsubp st(1), st
-		fst [temp]
-		fld [offsety]
-		fdivp st(1),st
-		fst [resfun1]
-		fld [six]
-		fsub st, st(1)
-		fstp [resfun1]
-		
-		fld [_arg]
-		fld [offsetx]
-		fdivp st(1), st
-		fld [rsi].xStart
-		faddp st(1), st
-		fistp [endx]
+	mov r10d, local_x
+	mov r11d, local_y
+	.if r11d != invalid_coord
+		; invoke DrawLine, hdc, r10d, r11d, r10d, r11d
+		mov prev_local_x, r10d
+		mov prev_local_y, r11d
+	.endif
 	
-		fld [startx]
-		fistp [startx]
-		fld [starty]
-		fistp [starty]
+	inc global_x
+	dec count
 
-		fld [resfun1]
-		fistp [endy]
-		
-		invoke DrawLine, [hdc], [startx], [starty], [endx], [endy]
-		
-		fild [endx]
-		fstp [endx]
-		mov r9d, [endx]
-		mov [startx], r9d
-		
-		fild [endy]
-		fstp [endy]
-		mov r9d, [endy]
-		mov [starty], r9d
-		
-		fld i
-		fld1
-		fadd st,st(1)
-		fst i				
-		
-		fld [count]
-		fcomi st, st(1)
-	.endw
+	cmp count, 0
+	jg DrawFunctionByPixel_main_loop
+
+DrawFunctionByPixel_main_loop_exit:
+
 	ret
 DrawFunctionByPixel endp
 ;---------------------------------------------
 ;Сопроцессорные функции арифметических вычислений
 ;---------------------------------------------
-;функция вычисления синуса
-sin proc c x:real8
+sin		proc c x:real8
 	finit
 	fld x
 	fsin
 	ret
 sin endp
 
-;функция вычисления косинуса
-cos proc c x:real8
+cos		proc c x:real8
 	finit
 	fld x
 	fcos
 	ret
 cos endp
 
-;функция вычисления логарифма по основанию 2
-log2 proc c x:real8
+log2	proc c x:real8
 	;логарифм вычисляется только для х>=0
 	finit 
 	fld1
@@ -708,7 +453,7 @@ log2 proc c x:real8
 	ret
 log2 endp
 
-lg proc c x:real8
+lg		proc c x:real8
 	finit
 	invoke log2, x
 	fldl2t
@@ -717,7 +462,7 @@ lg proc c x:real8
 	ret
 lg endp
 
-ln proc c x:real8
+ln		proc c x:real8
 	finit
 	invoke log2, x
 	fldln2
@@ -726,8 +471,7 @@ ln proc c x:real8
 	ret
 ln endp
 
-;функция вычисления тангенса
-tg proc c x:real8
+tg		proc c x:real8
 	finit 
 	fld x
 	fptan
@@ -735,8 +479,7 @@ tg proc c x:real8
 	ret
 tg endp
 
-;функция вычисления котангенса
-ctg proc c x:real8
+ctg		proc c x:real8
 	finit
 	invoke tg, x
 	fld1
@@ -744,19 +487,33 @@ ctg proc c x:real8
 	ret
 ctg endp
 
-;функция возведения в степень x^y
-exp proc c x:real8, y:real8
+exp		proc c x:real8, y:real8
     local change_x_sign:dword
     local change_res_sign:dword
+
     mov eax, 1
     mov [change_x_sign], eax
 
     finit
+
+	fldz
+    fld y
+    fcomi st, st(1)
+
+	.if ZERO?
+		fld1
+		ret
+    .endif
+
     fldz
     fld x
     fcomi st, st(1)
+
     .if CARRY?
         neg [change_x_sign] ;устанавливаем флаг -1, если x<0
+	.elseif ZERO?
+		fldz
+		ret
     .endif
 
     fld y
@@ -786,12 +543,12 @@ exp proc c x:real8, y:real8
 
 exp endp
 
-IntSum proc c a:qword, b:qword, function:qword
-	local i:qword
-	local sum:qword
+IntSum proc c a:real8, b:real8, function:qword
+	local i:real8
+	local sum:real8
 	
-	local result:qword
-	local arg:qword
+	local result:real8
+	local arg:real8
 	
 	
 	finit
@@ -808,7 +565,7 @@ IntSum proc c a:qword, b:qword, function:qword
 	fst i
 	fst sum
 	finit
-	.while !CARRY?
+	.while !CARRY? ; i < result
 		finit
 		fld i
 		fld thousandth
@@ -817,7 +574,7 @@ IntSum proc c a:qword, b:qword, function:qword
 		fadd st,st(1)
 		fst arg				;посчитали аргумент вызываемой функции arg(a+i*0.001)
 		
-		lea rax, function	;загрузили указатель на функцию,указанную в аргументах
+		lea rax, function
 		
 		.if Field.function != EXP_ID
 			invoke (unary_function ptr[rax]), arg
@@ -828,9 +585,9 @@ IntSum proc c a:qword, b:qword, function:qword
 		fld thousandth
 		fmul st,st(1)		;посчитали площадь фрагмента
 		
-		fld sum				;загрузили интегральную сумму
-		fadd st, st(1)		;прибавили
-		fst sum				;записали интегральную сумму
+		fld sum		
+		fadd st, st(1)
+		fst sum			
 		
 		finit
 		
@@ -841,67 +598,21 @@ IntSum proc c a:qword, b:qword, function:qword
 		
 		fld result 
 		fcomi st, st(1)
-		; если  i меньше result, то повторяем цикл
+		
 	.endw
 	fld sum
 		
 	ret
 IntSum endp
 
-;--------------------
-;ФУНКЦИЯ масштабирования по оси
-ZoomFunc proc a:dword, b:dword
-	local _a:qword
-	local _b:qword
-	local wid:qword
-	local temp:qword
-	local temp1:qword
-
-	;аргументы в функцию поступили целые, поэтому выполняем приведение к вещественному представлению
-	
-	.if globalf == 1
-		fld [a]
-		fstp [_a]
-		fld [b]
-		fstp [_b]
-	.elseif globalf == 0
-		fild [a]
-		fstp [_a]
-		fild [b]
-		fstp [_b]
-	.endif
-
-	mov [wid], 600	;длина области для рисования графика
-	finit 
-	fld [_a]
-	fld [_b]
-	fsub st,st(1)
-	fstp [temp]		;получили длину введенного отрезка
-
-
-	fild [wid]
-	fld [temp]
-	fdiv st, st(1)
-	fst [temp1]		;получили долю одного пикселя в общей длине отрезка
-
-	ret
-ZoomFunc endp
-
-InitFieldState proc frame ptr_field:ptr FieldState
+InitFieldState proc frame ptr_field:ptr field
 	mov rsi, ptr_field
-	assume rsi:ptr FieldState
+	assume rsi:ptr field
 	
 	mov [rsi].function, EMPTY_ID
-	mov [rsi].x0_cord, 0
-	mov [rsi].x1_cord, 0
-			
-	mov [rsi].xStart, 330.
-	mov [rsi].yStart, 330.
-	
-	mov [rsi].OrdNeg, 310.
-	mov [rsi].OrdPos, 310.
-	mov [rsi].AbsPos, 310.
-	mov [rsi].AbsNeg, 310.
+	mov [rsi].start_coord, 20
+	mov [rsi].end_coord, 640
+	mov [rsi].center_coord, 330
 	
 	ret
 InitFieldState endp
@@ -925,34 +636,39 @@ GetIntFromWindowText proc frame hEdit:HWND
 
 GetIntFromWindowText endp
 
-GetInterval proc field_ptr:ptr FieldState
+GetInterval proc field_ptr:ptr field
 	mov rsi, field_ptr
-	assume rsi:ptr FieldState 
+	assume rsi:ptr field 
 	
 	invoke GetIntFromWindowText, hEditIntA
-	mov [rsi].x0_cord, eax
+	mov [rsi].a, eax
 
 	invoke GetIntFromWindowText, hEditIntB
-	mov [rsi].x1_cord, eax
-	
+	mov [rsi].b, eax
+	cmp eax, [rsi].a
+	jge GetIntervalEnd
+	mov eax, [rsi].a
+	xchg [rsi].b, eax
+	mov [rsi].a, eax
+GetIntervalEnd:
 	ret
 GetInterval endp
 
-GetIntSum proc frame field_ptr:ptr FieldState
+GetIntSum proc frame field_ptr:ptr field
 	local string:qword
 	local sum:qword
 	local a:qword
 	local b:qword
 	
 	mov rsi, field_ptr
-	assume rsi:ptr FieldState
+	assume rsi:ptr field
 	
 	.if [rsi].function_ptr != NULL
 		finit
 		
-		fild [rsi].x0_cord
+		fild [rsi].a
 		fstp [a]
-		fild [rsi].x1_cord
+		fild [rsi].b
 		fstp [b]
 		
 		invoke IntSum, [a], [b], [rsi].function_ptr
@@ -1112,12 +828,7 @@ WndProcMain proc frame hwnd:HWND, iMsg:UINT, wParam:WPARAM, lParam:LPARAM
 		invoke TextOut, [hdc], 680, 580, $CTA0("Integral value:"), 19
 
 		invoke DrawFunctionByPixel, [hdc], addr Field
-        
-        .if Field.function == EMPTY_ID || Field.function == EXP_ID || Field.function == SIN_ID \
-		|| Field.function == COS_ID || Field.function == TG_ID || Field.function == CTG_ID \ 
-		|| Field.function == LOG2_ID || Field.function == LG_ID || Field.function == LN_ID
-			invoke DrawAxis, [hdc], addr Field
-        .endif
+		invoke DrawAxis, [hdc], addr Field
                 
         ; завершение перерисовки
         invoke EndPaint, [hwnd], addr ps
