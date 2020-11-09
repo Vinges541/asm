@@ -12,7 +12,7 @@ DEBUG equ 0
 
 .code
 
-;Вывод большого числа
+;Г‚Г»ГўГ®Г¤ ГЎГ®Г«ГјГёГ®ГЈГ® Г·ГЁГ±Г«Г 
 bignum_printf proc uses esi ebx edx ecx bn:ptr bignum
 
 	mov esi,[bn]
@@ -52,7 +52,7 @@ bignum_printf proc uses esi ebx edx ecx bn:ptr bignum
 	ret
 bignum_printf endp
 
-; Нуль-терминированная строка -> long
+; ГЌГіГ«Гј-ГІГҐГ°Г¬ГЁГ­ГЁГ°Г®ГўГ Г­Г­Г Гї Г±ГІГ°Г®ГЄГ  -> long
 my_strtoul proc uses esi start_str:ptr byte, end_str:ptr byte
 
 	local num:dword
@@ -90,7 +90,7 @@ my_strtoul proc uses esi start_str:ptr byte, end_str:ptr byte
 
 my_strtoul endp
 
-;Инициализация нулём
+;Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г­ГіГ«ВёГ¬
 bignum_init_null proc uses edi edx bn:dword
 	
 	invoke crt_malloc, sizeof(bignum)
@@ -121,7 +121,7 @@ bignum_init_null proc uses edi edx bn:dword
 	ret
 bignum_init_null endp
 
-;Устранение "минус нуля"
+;Г“Г±ГІГ°Г Г­ГҐГ­ГЁГҐ "Г¬ГЁГ­ГіГ± Г­ГіГ«Гї"
 bignum_zeronull_fix proc uses edi edx bn:ptr bignum
 
 	mov edi,[bn]
@@ -134,7 +134,7 @@ bignum_zeronull_fix proc uses edi edx bn:ptr bignum
 
 bignum_zeronull_fix endp
 
-;Инициализация большого числа строкой шестнадцатиричных символов
+;Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЎГ®Г«ГјГёГ®ГЈГ® Г·ГЁГ±Г«Г  Г±ГІГ°Г®ГЄГ®Г© ГёГҐГ±ГІГ­Г Г¤Г¶Г ГІГЁГ°ГЁГ·Г­Г»Гµ Г±ГЁГ¬ГўГ®Г«Г®Гў
 bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 				
 	local i:dword
@@ -252,7 +252,7 @@ bignum_set_str proc uses ebx ecx esi edi bn:ptr bignum, cstr:ptr byte
 	ret
 bignum_set_str endp
 
-;Инициализация большого числа числом типа unsigned int
+;Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЎГ®Г«ГјГёГ®ГЈГ® Г·ГЁГ±Г«Г  Г·ГЁГ±Г«Г®Г¬ ГІГЁГЇГ  unsigned int
 bignum_set_ui proc uses edi ebx edx bn:ptr bignum, number:dword
 
 	mov edi,[bn]
@@ -282,7 +282,7 @@ bignum_set_ui proc uses edi ebx edx bn:ptr bignum, number:dword
 
 bignum_set_ui endp
 
-;Инициализация большого числа числом типа int
+;Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЎГ®Г«ГјГёГ®ГЈГ® Г·ГЁГ±Г«Г  Г·ГЁГ±Г«Г®Г¬ ГІГЁГЇГ  int
 bignum_set_i proc uses edi ebx edx bn:ptr bignum, number:dword
 
 	mov edi,[bn]
@@ -383,7 +383,10 @@ bignum_less proc uses edi esi ecx edx lhs:ptr bignum, rhs:ptr bignum
 	.if dword ptr [edi] < edx
 		mov eax, 1
 		ret
-	.endif
+	.elseif dword ptr [edi] > edx
+	    mov eax, 0
+	    ret
+  	.endif
 	sub edi, sizeof(digit)
 	sub esi, sizeof(digit)
 	dec ecx
@@ -392,7 +395,7 @@ bignum_less proc uses edi esi ecx edx lhs:ptr bignum, rhs:ptr bignum
 	ret
 bignum_less endp
 
-;Сложение двух больших чисел; res = lhs + rhs
+;Г‘Г«Г®Г¦ГҐГ­ГЁГҐ Г¤ГўГіГµ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; res = lhs + rhs
 bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	local result:ptr bignum
@@ -542,7 +545,7 @@ bignum_add proc uses edi esi ebx ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 	ret
 bignum_add endp
 
-;Вычитание двух больших чисел; res = lhs - rhs
+;Г‚Г»Г·ГЁГІГ Г­ГЁГҐ Г¤ГўГіГµ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; res = lhs - rhs
 bignum_sub proc uses edi res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 	
 	mov edi, rhs
@@ -554,7 +557,7 @@ bignum_sub proc uses edi res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 bignum_sub endp
 
-;Побитовое ИСКЛЮЧАЮЩЕЕ ИЛИ двух больших чисел; res = lhs ^ rhs
+;ГЏГ®ГЎГЁГІГ®ГўГ®ГҐ Г€Г‘ГЉГ‹ГћГ—ГЂГћГ™Г…Г… Г€Г‹Г€ Г¤ГўГіГµ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; res = lhs ^ rhs
 bignum_xor proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	mov eax, lhs
@@ -621,7 +624,7 @@ bignum_xor proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 
 bignum_xor endp
 
-;Побитовое ИЛИ двух больших чисел; res = lhs | rhs
+;ГЏГ®ГЎГЁГІГ®ГўГ®ГҐ Г€Г‹Г€ Г¤ГўГіГµ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; res = lhs | rhs
 bignum_or proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	mov eax, lhs
@@ -685,7 +688,7 @@ bignum_or proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr 
 
 bignum_or endp
 
-;Побитовое И двух больших чисел; res = lhs & rhs
+;ГЏГ®ГЎГЁГІГ®ГўГ®ГҐ Г€ Г¤ГўГіГµ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; res = lhs & rhs
 bignum_and proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	mov eax, lhs
@@ -749,7 +752,7 @@ bignum_and proc uses ebx edi esi ecx edx res:ptr bignum, lhs:ptr bignum, rhs:ptr
 
 bignum_and endp
 
-;Умножение большого числа на unsigned int; res = bn * num
+;Г“Г¬Г­Г®Г¦ГҐГ­ГЁГҐ ГЎГ®Г«ГјГёГ®ГЈГ® Г·ГЁГ±Г«Г  Г­Г  unsigned int; res = bn * num
 bignum_mul_ui proc uses edi ecx ebx res:ptr bignum, bn:ptr bignum, num:dword
 
 	local mult_res:qword
@@ -882,7 +885,7 @@ bignum_shl proc uses edi ecx edx bn:ptr bignum, number:dword
 	ret
 bignum_shl endp
 
-;Умножение двух больших чисел; res = lhs * rhs
+;Г“Г¬Г­Г®Г¦ГҐГ­ГЁГҐ Г¤ГўГіГµ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; res = lhs * rhs
 bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr bignum
 
 	local inter_res:ptr bignum
@@ -927,7 +930,7 @@ bignum_mul proc uses edi esi ebx ecx res:ptr bignum, lhs:ptr bignum, rhs:ptr big
 	ret
 bignum_mul endp
 
-;Копирование больших чисел; dst = src
+;ГЉГ®ГЇГЁГ°Г®ГўГ Г­ГЁГҐ ГЎГ®Г«ГјГёГЁГµ Г·ГЁГ±ГҐГ«; dst = src
 bignum_cpy proc uses edi esi ebx dst:ptr bignum, src:ptr bignum
 
 	mov edi,[dst]
@@ -1030,7 +1033,7 @@ bignum_free proc uses edi bn:ptr bignum
 	ret
 bignum_free endp
 
-;Возведение большого числа в n-ную степень; res = lhs^exp
+;Г‚Г®Г§ГўГҐГ¤ГҐГ­ГЁГҐ ГЎГ®Г«ГјГёГ®ГЈГ® Г·ГЁГ±Г«Г  Гў n-Г­ГіГѕ Г±ГІГҐГЇГҐГ­Гј; res = lhs^exp
 bignum_pow proc uses ecx res:ptr bignum, lhs:ptr bignum, exp:dword
 
 	invoke bignum_cpy, res, lhs
